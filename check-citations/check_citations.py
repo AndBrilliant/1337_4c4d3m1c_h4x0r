@@ -399,6 +399,24 @@ def gather_evidence(item: BibItem, refs_dir: Path | None) -> Evidence:
         return ev
     fetched = fetch_url(url)
     classification, reason = classify_fetch(fetched, url)
+    # 3) Bot-block fallback: Playwright-driven headless Chromium recovers
+    # the landing page metadata for Cloudflare-protected publishers (OUP,
+    # APS, Elsevier, etc.) where urllib gets 403'd. Skipped if Playwright
+    # is not installed.
+    if classification in ("blocked", "http_error"):
+        try:
+            from browser_fetch import fetch_url_browser, playwright_available
+        except ImportError:
+            fetch_url_browser = None
+            playwright_available = lambda: False  # noqa: E731
+        if fetch_url_browser and playwright_available():
+            b_fetched = fetch_url_browser(url)
+            if not b_fetched.get("error") or b_fetched.get("status", 0) == 200:
+                b_class, b_reason = classify_fetch(b_fetched, url)
+                if b_class == "ok":
+                    fetched = b_fetched
+                    classification = "ok"
+                    reason = f"(browser fallback) recovered from {classification}"
     ev = Evidence(source="url", fetched=fetched,
                   classification=classification, reason=reason)
     return ev
