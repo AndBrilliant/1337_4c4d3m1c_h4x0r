@@ -267,17 +267,51 @@ def _surname_of(name: str) -> str:
 def extract_bib_authors(bibitem_raw: str) -> tuple[list[str], bool]:
     """Return (list of surnames, has_etal_truncation).
 
-    Bib entries vary wildly.  We take the AUTHORS slot as everything up to
-    the first ``\\newblock`` (natbib convention: authors are the first
-    \\newblock-separated chunk), or up to the first period followed by a
-    capital letter (sentence-style bibs).  Then split on commas and "and".
+    Bib entries vary wildly.  Heuristics in priority order to isolate the
+    AUTHORS slot:
+
+      1. ``\\newblock`` is present → take everything before the first one
+         (natbib convention).
+      2. ``\\bibitem`` is followed by an inline-quoted title — physics-style
+         bibs structure as ``Authors, ``Title,'' Venue ...``.  Take the slot
+         up to the first opening LaTeX quote (`` `` `` or just `` ` ``).
+      3. ``\\textit{Title}`` or ``\\emph{Title}`` marks an italic title (book
+         convention).  Take the slot up to the first such command.
+      4. Fallback: the whole bibitem (lossy — caller may get title/venue
+         words mixed in as fake "authors").
+
+    Without these markers the previous implementation would consume the
+    entire bibitem and emit title words, journal abbreviations, and series
+    names as bogus "authors".  See v3.1 regression: jumper2021 → ['jumper',
+    'alphafold'], barut1979 → ['barut', 'formula', 'physrevlett'].
     """
-    # First \newblock-delimited block is the authors slot in natbib bibs.
-    parts = re.split(r"\\newblock", bibitem_raw, maxsplit=1)
-    head = parts[0]
-    # Trim leading "\bibitem[...]{key}" if present.
-    head = re.sub(r"\\bibitem\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*", "", head)
-    # Strip LaTeX commands (e.g. \emph{}, \\&)
+    # Trim leading "\bibitem[...]{key}" first so its key tokens don't leak in.
+    raw = re.sub(r"\\bibitem\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*", "", bibitem_raw)
+
+    # Rule 1: \newblock boundary (natbib).
+    if "\\newblock" in raw:
+        head = re.split(r"\\newblock", raw, maxsplit=1)[0]
+    else:
+        # Rule 2: opening LaTeX quote `` (or single ` ) marks an inline title.
+        m = re.search(r"``|(?<![\\a-zA-Z])`(?![\\a-zA-Z])", raw)
+        # Rule 3: \textit{ or \emph{ marks an italicized title (books).
+        # BUT skip \textit{et al.} / \emph{et al.} — those are LaTeX-styled
+        # author-list markers, not the title.  Without this skip, an inline
+        # ``J. Jumper \textit{et al.}, ``Title,'' ...`` would cut off "et al."
+        # from the author segment, losing the et-al signal that downstream
+        # heuristics rely on.
+        m_italic = None
+        for cand in re.finditer(r"\\(?:textit|emph)\s*\{([^{}]*)\}", raw):
+            if re.fullmatch(r"\s*et\s+al\.?\s*", cand.group(1), re.IGNORECASE):
+                continue
+            m_italic = cand
+            break
+        # Rule 4: fall through; use whichever boundary comes first; else all.
+        candidates = [p.start() for p in (m, m_italic) if p]
+        head = raw[:min(candidates)] if candidates else raw
+
+    # Strip LaTeX commands (e.g. \textbf{...}, \\&) — keep the argument so
+    # capitalized name fragments like {K}oide survive.
     head = re.sub(r"\\[a-zA-Z]+\*?\{([^{}]*)\}", r"\1", head)
     head = re.sub(r"\\[a-zA-Z]+\*?", " ", head)
     head = head.replace("{", "").replace("}", "")
@@ -289,6 +323,10 @@ def extract_bib_authors(bibitem_raw: str) -> tuple[list[str], bool]:
     tokens = [t.strip(".  ") for t in _AUTHOR_SEPARATORS.split(head) if t.strip(".  ")]
     surnames = []
     for t in tokens:
+        # Skip tokens that look like parenthesized collaboration tags, e.g.
+        # "(LSND Collaboration)" → would otherwise contribute "collaboration".
+        if re.match(r"^\s*\(", t):
+            continue
         sn = _surname_of(t)
         if sn and len(sn) >= 2:  # ignore one-letter or empty fragments
             surnames.append(sn)
@@ -403,6 +441,21 @@ def _check_authors(r: MetadataReport) -> None:
     if not r.bib_authors or not r.src_authors:
         return
     src_set = set(r.src_authors)
+    # If the bib uses `et al.` AND the source exposes only 1–2 authors, the
+    # source metadata is almost certainly partial (e.g., Nature exposes only
+    # the senior author in `citation_author` tags despite 30+-author papers).
+    # We cannot reliably check against partial data — skip the check.
+    # Justification: jumper2021 — Nature returns ['hassabis'] only; bib has
+    # 'Jumper et al.' First author IS Jumper but Hassabis is the senior
+    # corresponding author Nature chose to expose. Both are real authors of
+    # the same paper. Flagging this as a "mismatch" misleads the user.
+    if r.bib_etal and len(src_set) <= 2:
+        r.rationale.append(
+            f"authors check SKIPPED: bib has 'et al.' and source meta exposes "
+            f"only {len(src_set)} author(s) {sorted(src_set)} — source list is "
+            f"partial; cannot decide"
+        )
+        return
     if r.bib_authors[0] not in src_set:
         r.rationale.append(
             f"AUTHOR MISMATCH: bib first author surname '{r.bib_authors[0]}' "
