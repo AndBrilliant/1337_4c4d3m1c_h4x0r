@@ -1,6 +1,14 @@
 # Academic Manuscript Verification Toolkit
 
-> Tools for catching errors in scientific manuscripts before submission.
+> A lightweight manuscript preflight toolkit for LaTeX papers. Combines
+> deterministic citation metadata checks, evidence-first claim-support review,
+> and fresh-model pre-submission screeners.
+>
+> **Not a peer-review substitute.** A practical workflow for catching
+> embarrassing citation, numerical, attribution, dimensional, and tone errors
+> *before* submission — the boring class of bugs that most early-draft papers
+> have, that you don't want a reviewer to find first.
+>
 > Originally developed alongside the F-identity / Koide research line; now
 > usable on any LaTeX paper.
 
@@ -161,9 +169,11 @@ vendor** than the one used to draft the paper:
 - `preflight_review_prompt.md` — technical pass. Numbers, units, citations,
   dimensional consistency, internal contradictions, attribution problems.
 
-See `screeners/SCREENERS.md` for the binding **convergence rule** — a paper
-is not screened until a fresh-vendor, full-prompt run produces zero findings
-across all categories.
+See `screeners/SCREENERS.md` for the **stopping heuristic** — a paper is
+considered preflight-clean when a fresh-vendor, full-prompt run produces
+zero findings across all categories. This is a *good* stopping signal, not
+proof of readiness; it catches the boring bug class, not whether the paper
+is right.
 
 ### 2. Citation checker (`check-citations/`)
 

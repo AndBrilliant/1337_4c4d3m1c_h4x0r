@@ -46,8 +46,26 @@ echo "[3/4] Installing dependencies from requirements.txt"
 pip install --quiet -r requirements.txt
 
 # 4. Playwright Chromium (one-time download, ~150 MB).
-echo "[4/4] Installing Playwright Chromium (for Cloudflare-blocked publisher pages)"
+echo "[4/5] Installing Playwright Chromium (for Cloudflare-blocked publisher pages)"
 python -m playwright install chromium >/dev/null
+
+# 5. Optional: pandoc for clean LaTeX → plain text extraction in gd_run_from_source.
+echo "[5/5] Checking optional dependencies"
+if command -v pandoc >/dev/null 2>&1; then
+    echo "  pandoc:     installed  ($(pandoc --version | head -1))"
+else
+    echo "  pandoc:     NOT installed — optional but recommended"
+    echo "              macOS:  brew install pandoc"
+    echo "              Linux:  sudo apt install pandoc"
+    echo "              Without it, .tex extraction falls back to a rough regex strip."
+fi
+if command -v pdftotext >/dev/null 2>&1; then
+    echo "  pdftotext:  installed  ($(pdftotext -v 2>&1 | head -1))"
+else
+    echo "  pdftotext:  NOT installed — required for PDF citation evidence + GD on PDF papers"
+    echo "              macOS:  brew install poppler"
+    echo "              Linux:  sudo apt install poppler-utils"
+fi
 
 echo
 echo "=== setup complete ==="

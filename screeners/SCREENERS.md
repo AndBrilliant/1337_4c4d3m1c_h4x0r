@@ -11,22 +11,24 @@ The two are not interchangeable. Stage 1 catches things a moderator would reject
 
 ---
 
-## ⚠️ THE CONVERGENCE RULE — BINDING
+## Stopping heuristic
 
-**A manuscript is converged when, and only when, a fresh model running the full preflight prompt finds nothing in categories A through F.**
+**A manuscript is preflight-clean when a fresh model running the full preflight prompt finds nothing in categories A through F.**
 
-NOT converged:
+This is a *good stopping heuristic*, not proof of readiness. It catches the boring-bug class (citations, numbers, dimensions, attribution, tone) that early-draft papers always have. It does not catch novelty, scope, or domain-specific correctness — those are peer review's job.
+
+NOT preflight-clean:
 - Working-Claude says "I checked and it looks ready"
 - An automated dissent system stops surfacing issues
 - All internal verification scripts pass
-- The same model that found bugs last round finds nothing this round (it is biased now)
+- The same model that found bugs last round finds nothing this round (it's biased now)
 
-CONVERGED:
+Preflight-clean:
 - A **fresh model** — different session at minimum, different vendor preferred
 - Running the **full preflight prompt below verbatim**
 - Returns **zero findings** in categories A, B, C, D, E, and F
 
-Until that gate clears: do not submit. Do not call the paper "ready." Working-Claude's confidence is not the metric, has been wrong every time it has been offered, and the binding rule above exists because of that specific failure pattern.
+Until that gate clears, the paper still has fixable boring-bug issues. Working-Claude's confidence has been wrong every time it has been offered as a stopping signal in this workflow; the fresh-model gate exists because of that specific failure pattern.
 
 ---
 
@@ -61,7 +63,7 @@ The Koide–Soddy paper (Brilliant 2026, MDPI Symmetry submission) is the first 
 
 ### Lessons captured the hard way
 
-**From round 2:** Running the structured preflight prompt found 9 real bugs in a single 9-minute pass after rounds 1's casual prompt found only 1. The structure matters: banning the post-hoc lecture and the publish-verdict forces the model to actually walk the technical categories. Working-Claude had called convergence three times before this round and was wrong every time. The binding convergence rule was added immediately after round 2.
+**From round 2:** Running the structured preflight prompt found 9 real bugs in a single 9-minute pass after round 1's casual prompt found only 1. The structure matters: banning the post-hoc lecture and the publish-verdict forces the model to actually walk the technical categories. Working-Claude had called the pass complete three times before this round and was wrong every time. The fresh-model stopping rule was added immediately after round 2.
 
 **From round 3:** A fresh-model rerun on the round-2-fixed manuscript found 5 *more* genuinely new bugs that round 2 missed entirely — including a citation/attribution error that required directly reading Kocik's actual paper to verify, a dimensional consistency issue that nobody had noticed across multiple earlier reviews, and a wrong percentage attribution. Different fresh models have different obsessions and find different things. **Each new round must use a different fresh model than the previous round** — ideally a different vendor entirely. Also: when uploading to a fresh model, always re-attach the latest patched PDF; round 3 caught real bugs but its model wasted effort on 6 already-fixed items because the attached PDF was a slightly older snapshot from a previous chat.
 
@@ -78,7 +80,7 @@ These are things that have actually gone wrong in this workflow, not things that
 
 2. **Same-vendor session bias.** Running round N+1 in a new ChatGPT session after round N was also ChatGPT does not give you full vendor independence. The training and prompting style overlap means the model will tend to find the same things and miss the same things. Switch vendors between rounds when possible.
 
-3. **Working-Claude false convergence.** Working-Claude (the assistant doing the manuscript editing) will be wrong about convergence. This has happened three times in the Koide–Soddy workflow. Working-Claude's confidence is not the metric. Only a fresh-model preflight pass with zero findings is the metric. This is the entire reason the binding rule exists.
+3. **Working-Claude false convergence.** Working-Claude (the assistant doing the manuscript editing) will be wrong about when the preflight pass is done. This has happened three times in the Koide–Soddy workflow. Working-Claude's confidence is not the stopping signal. Only a fresh-model preflight pass with zero findings is the stopping signal. This is the entire reason the fresh-model rule exists.
 
 4. **The post-hoc escape hatch.** If you write your own prompt, you will leave room for the model to say "this is post-hoc numerology" and stop there without engaging with the technical content. The structured preflight prompt explicitly bans this escape hatch. Do not edit it out.
 
@@ -240,9 +242,9 @@ author has already made his peace with all of that. Find the bugs.
 - **First time using this on a new paper?** Run Stage 1 (preprint screener) on the abstract + intro + conclusion. If it FLAGS, fix the framing before doing anything else.
 - **Stage 1 passed?** Move to Stage 2. Run the preflight prompt against ChatGPT in extended thinking mode with the full PDF attached. Wait. Apply every finding.
 - **Round 1 done?** Run round 2 against a different vendor (Gemini, Grok, Claude in another tab). Apply findings.
-- **Still finding real bugs?** Keep looping. The convergence rule is binding.
-- **Round N returned only soft polish, no real bugs?** Run round N+1 anyway, against yet another fresh model. Convergence is **zero findings in A–F**, not "only minor stuff left."
-- **Round M is visibly hallucinating issues to fill space?** Now you are converged. Submit.
+- **Still finding real bugs?** Keep looping. The stopping heuristic is "zero findings in A–F from a fresh model," not "I'm tired of looping."
+- **Round N returned only soft polish, no real bugs?** Run round N+1 anyway, against yet another fresh model. The gate is **zero findings in A–F**, not "only minor stuff left."
+- **Round M is visibly hallucinating issues to fill space?** Now the stopping heuristic has fired. Submit — though "submit" here means "submit the boring-bug version"; novelty/scope review is still on you.
 
 ## Files in this directory
 

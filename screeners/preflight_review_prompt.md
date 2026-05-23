@@ -6,22 +6,24 @@ Attach the PDF or paste the .tex source after the prompt.
 
 ---
 
-## ⚠️ CONVERGENCE RULE — BINDING
+## Stopping heuristic
 
-**A paper is converged when, and only when, a fresh model running the full preflight prompt finds nothing in categories A through F.**
+**The boring-bug pass is done when a fresh model running the full preflight prompt finds nothing in categories A through F.**
 
-NOT converged:
+This is a stopping heuristic for the *preflight pass*, not a "ready to publish" signal. Catches: citations, numbers, dimensions, attribution, tone, stale claims. Does not catch: novelty, scope, or whether the science is right — those are out of scope for this prompt.
+
+NOT preflight-clean:
 - Working-Claude says "I checked and it looks ready"
 - The dissent system stops finding things
 - All internal automated checks pass
 - The same model that found bugs last round finds nothing this round (it's biased now)
 
-CONVERGED:
+Preflight-clean:
 - A **fresh model** (different session at minimum, different vendor preferred)
 - Running the **full prompt below verbatim**
 - Returns **zero findings** in categories A, B, C, D, E, and F
 
-Until that gate clears, do not submit. Until that gate clears, do not call the paper "ready." Working-Claude's confidence is not the metric.
+Until that gate clears, the paper still has fixable boring-bug issues. Working-Claude's confidence on this question has been wrong every time in this workflow — that's why the fresh-model gate exists.
 
 ---
 
@@ -127,7 +129,9 @@ author has already made his peace with all of that. Find the bugs.
 | 4 | 2026-04-09 | Fresh model, full preflight prompt (different vendor from round 3) | v4.2 post-round-3 PDF (correctly uploaded by author) | **5 genuinely new** (F vs k_4^- notation drift in §3 opening; sample-size language mismatch §5.4 vs computational note; charm threshold contradiction in §4 prose vs §5.1 table; Kocik over-attribution still in "within Kocik's framework" / "We extend Kocik's construction" phrases; Coxeter [10] missing page range) | 7 (analytic m_2 branch formula, per-prior denominators, Fig 2 "context only" framing, §6 supportive softening, §7 if-coincidence softening, Author Contributions MDPI req, Keywords MDPI req) | 0 | 12/12 findings addressed. Saved as v4_3.tex, 428 lines. |
 | 5 | _next_ | _**another different vendor**, not Gemini/Grok/Claude/ChatGPT whichever ran round 4_ | v4.3 | _TBD_ | _TBD_ | _TBD_ | NOT YET RUN |
 
-**Key lesson from round 2:** Running the same preflight prompt that rounds 1 missed found *9 real bugs in one shot*, including a wrong arithmetic computation (Q value), three wrong table values, a wrong figure caption, and a wrong journal citation. Confidence-from-the-inside is unreliable. The convergence rule above exists because of this specific failure.
+**Key lesson from round 2:** Running the same preflight prompt that round 1 missed found *9 real bugs in one shot*, including a wrong arithmetic computation (Q value), three wrong table values, a wrong figure caption, and a wrong journal citation. Confidence-from-the-inside is unreliable. The fresh-model stopping gate exists because of this specific failure pattern.
+
+**Track record caveat:** the per-round bug counts above come from one main manuscript workflow (Koide–Soddy paper). Treat them as a useful operating-experience datum, not as validated performance across a representative sample of papers.
 
 **Key lesson from round 3:** The fresh-model rerun found *5 genuinely new bugs* that round 2 missed entirely — including a citation/attribution error (Kocik's actual construction is generalized intersecting circles, not standard mutually-tangent Descartes — verified directly against arXiv:1201.2067), a dimensional consistency issue (F^n for n≠2 is not unit-invariant and cannot be used in look-elsewhere accounting), and a wrong percentage attribution (99.98% claimed for lattice m_s alone, actually 99.4%; the rest is α_s and truncation). Different fresh models find different bugs. **Each new round must use a different fresh model than the previous round.** Also, when uploading to a fresh model, always re-attach the latest patched PDF — round 3 caught real bugs but its model also wasted effort on 6 already-fixed items because the attached PDF was a slightly older snapshot.
 
@@ -141,7 +145,7 @@ author has already made his peace with all of that. Find the bugs.
 6. Vibe complaints get acknowledged once and then dropped.
 7. After all fixes are in, **run the preflight prompt against ANOTHER fresh model.** Round N's bug-fixer cannot also be Round N+1's verifier.
 8. Repeat until a fresh model returns zero findings in categories A–F.
-9. Only then is the paper "converged" and ready to submit.
+9. At that point the preflight pass is done — the paper is **boring-bug clean**. Whether it's actually ready to submit is a separate judgment (does it make a defensible novel claim, is the scope right for the venue, etc.) that this pass doesn't try to answer.
 
 **Cost of this discipline:** ~3 model rounds, ~30 minutes each = 1.5 hours total.
 **Cost of skipping it:** real desk rejection or peer-review embarrassment for errors a model could have found in 9 minutes.
