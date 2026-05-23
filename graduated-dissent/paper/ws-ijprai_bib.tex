@@ -1,0 +1,67 @@
+\documentclass{ws-ijprai}
+
+\usepackage{url,overcite}
+
+\def\btex{B\kern-.05em{i}\kern-.025em{b}\kern-.08em\TeX}
+
+\begin{document}
+
+\title{\btex ing in WSPC \btex\/ Style File}
+
+\markboth{WSPC}{Using World Scientific's \btex\/ Style File}
+
+\maketitle
+
+\section{Usage}
+
+\begin{verbatim}
+\documentclass{ws-ijprai}
+\usepackage{url,overcite}
+\begin{document}
+\section{Output}
+Sample output using ws-ijprai bibliography style file ...
+text\cite{best,pier,jame} ...
+\bibliographystyle{ws-ijprai}
+\bibliography{sample}
+\end{document}
+\end{verbatim}
+
+\section{Output}
+Sample output using ws-ijprai bibliography style file
+
+\begin{enumerate}
+
+\item article: text\cite{best,pier,jame}
+
+\item proceedings: text\cite{Weiss94}
+
+\item inproceedings: text\cite{conftypical,Moss94}
+
+\item book: text\cite{ArmsRace1}
+
+\item edition: text\cite{ComplexVariables}
+
+\item editor: text\cite{ColBenh:93}
+
+\item series: text\cite{inbook}
+
+\item tech report: text\cite{hobby1992,CSTR116}
+
+\item unpublished: text\cite{VoQS}
+
+\item phd thesis: text\cite{Brown:1988:IEL}
+
+\item masters thesis: text\cite{segms}
+
+\item incollection: text\cite{Jones:Phoneme}
+
+\item booklet: text\cite{URW:kerning}
+
+\item misc: see Ref.~\citen{netpbm} for examples
+
+\end{enumerate}
+
+\bibliographystyle{ws-ijprai}
+\bibliography{sample}
+
+\end{document}

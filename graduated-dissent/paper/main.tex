@@ -1,0 +1,526 @@
+%% To use: Open the IJPRAI template on Overleaf at
+%% https://www.overleaf.com/latex/templates/international-journal-of-pattern-recognition-and-artificial-intelligence-ijprai/nswmytycsnvn
+%% Replace the template content with everything below.
+%% The ws-ijprai.cls file is already in the Overleaf project.
+
+\documentclass{ws-ijprai}
+
+\begin{document}
+
+\markboth{A. M. Brilliant}
+{Steelmanning LLM Review: Severity Calibration Through Adversarial Self-Challenge}
+
+\title{Steelmanning LLM Review: Severity Calibration
+Through Adversarial Self-Challenge}
+
+\author{Andrew Michael Brilliant}
+\address{Applied Dynamics Research, Sapporo, Japan\\
+ORCID: 0009-0004-8024-5442\\
+andrew.brilliant@gmail.com}
+
+\maketitle
+
+\begin{abstract}
+Large language models can identify methodological concerns in scientific
+manuscripts but cannot reliably distinguish fatal errors from routine
+limitations. We formalize this as a severity calibration problem and
+present a multi-model architecture (graduated dissent) that addresses it
+through adversarial steelman exchange: separated model instances argue
+against their own severity ratings before an arbiter renders judgment.
+
+On the SPOT scientific error detection benchmark ($n=50$ text-detectable
+papers, externally validated ground truth), the steelman exchange achieves
+36\% pass@1 with 11.7\% retraction-worthy precision, nearly double the
+precision of alternative architectures, while producing the fewest top-tier
+flags per paper. On a paired benchmark of 10 retracted papers with 19
+non-retracted controls (author-scored with independent multi-model audit),
+the steelman exchange produces fewer false retraction-worthy classifications
+on controls (2/19 under independent out-of-family audit) than multi-model
+pooling (3/19). On SPOT, multi-model pooling improves detection modestly
+but does not improve severity calibration over rubric-based single-model
+review. Both observations are consistent with an information-theoretic
+bound showing that correlated evaluators cannot accumulate independent
+evidence regardless of ensemble size.
+
+All code, data, model outputs, and a replication harness are released.
+\end{abstract}
+
+\keywords{LLM evaluation; severity calibration; steelman exchange;
+adversarial self-challenge; multi-model review; error detection.}
+
+
+\section{Introduction}
+\label{sec:intro}
+
+A system that produces 15 findings per paper, of which 7\% are genuine,
+does not perform triage; it generates a reading list with a 93\% noise floor.
+The human reviewer must manually evaluate every finding, because the system
+provides no signal about which findings matter. This is the current
+state of LLM-based scientific manuscript review.
+
+The practical bottleneck is no longer detection alone. Current frontier models
+can identify methodological concerns in scientific manuscripts at rates
+comparable to individual human reviewers.\cite{liang2024feedback} The SPOT
+benchmark\cite{son2025spot} measures whether a model finds a documented error
+somewhere in its output; the FLAWS benchmark\cite{xi2025flaws}
+measures error localization. Detection performance continues to improve, but
+unranked findings are now the practical bottleneck.
+
+The problem is \emph{severity calibration}: the inability to distinguish fatal
+errors from routine limitations. A paper with a catastrophic statistical error
+receives the same diplomatic review format as a paper with minor reporting
+gaps (several strengths, several concerns, a hedged
+conclusion).\cite{brilliant2026selfcorrection} This creates a practical
+bottleneck: as AI-assisted writing increases submission volumes while making
+surface quality less diagnostic,\cite{kobak2025llm} editorial workflows need
+automated triage that can rank problems by severity, not merely list them.
+
+We present three contributions:
+
+\begin{enumerate}
+\item A multi-model architecture in which separated model instances
+exchange steelman arguments challenging each other's severity ratings,
+converting undifferentiated findings into graded severity labels
+(Section~\ref{sec:method}).
+
+\item Empirical evidence from two independent benchmarks showing that
+the steelman exchange improves detection and nearly doubles within-tier
+retraction-worthy precision compared to alternative architectures, while
+multi-model pooling without adversarial exchange provides no severity
+calibration improvement over rubric-based single-model review
+(Sections~\ref{sec:spot_results}--\ref{sec:retracted_results}).
+
+\item An information-theoretic motivation explaining why pooling
+correlated evaluators should not be expected to accumulate independent severity
+evidence, and why adversarial exchange is a structurally plausible remedy
+(Section~\ref{sec:theory}).
+\end{enumerate}
+
+Table~\ref{tab:headline} summarizes the empirical results.
+
+\begin{table}[h]
+\tbl{Results across two benchmarks. B3 and graduated dissent (GD) use the
+same models and arbiter; they differ only in the steelman exchange.
+Retracted-paper results use out-of-family audit (Grok~4, Mistral Large~2,
+disjoint from evaluation pipeline).}
+{\begin{tabular}{@{}lccccc@{}}
+\toprule
+& \multicolumn{2}{c}{Retracted Papers ($n=10$)} &
+\multicolumn{3}{c}{SPOT ($n=50$)} \\
+\cline{2-3} \cline{4-6}
+Condition & Detection$^\dagger$ & FP Rate & pass@1 & RW-prec. & RW-yield \\
+\colrule
+B1: Single model & 6/10 & 0/19 & 24\% & n/a & n/a \\
+B2: Single + rubric & 9/10 & 0/19 & 28\% & 7.0\% & 20\% \\
+B3: Multi-model pool & 7/10 & 3/19 & 30\% & 6.2\% & 20\% \\
+GD: Steelman & 10/10 & 2/19 & 36\% & 11.7\% & 32\% \\
+\botrule
+\end{tabular}\label{tab:headline}}
+\begin{tabnote}
+$^\dagger$Out-of-family audit scoring. In-family audit produced 0/19 FP
+for GD and 2/19 for B3; independent verification revised GD to 2/19 and B3
+to 3/19.
+\end{tabnote}
+\end{table}
+
+
+\section{Method: Multi-Model Evaluation with Steelman Exchange}
+\label{sec:method}
+
+The graduated dissent protocol\cite{brilliant2026graduated} treats evaluation
+as a multi-stage adversarial process.
+
+\subsection{Architecture}
+
+Two \textbf{provers} independently review an anonymized manuscript in separated
+contexts, rating each finding's severity (retraction-worthy, major-revision,
+minor). A \textbf{steelman exchange} then requires each prover to construct the
+strongest case against their own severity ratings, arguing that their own
+findings are less severe than initially assessed. An \textbf{arbiter} receives
+all material and applies a conservative severity rubric.
+
+\subsection{Severity rubric}
+
+Every prompt includes the following definitions:
+
+\begin{quote}
+\textbf{Retraction-worthy:} The error means the paper's central conclusions
+cannot be supported by the data as presented. Not ``could be improved'' but
+``fundamentally broken.''
+
+\textbf{Major-revision:} A real concern that could change conclusions if
+addressed differently, but does not definitively invalidate them.
+
+\textbf{Minor:} Valid criticism applicable to most published papers. Would not
+change conclusions.
+\end{quote}
+
+\subsection{Why the steelman exchange targets severity}
+
+Standard multi-model pooling (B3 in our experiments) combines findings from two
+models but does not challenge severity ratings. If both models share the
+tendency to over-rate severity on certain error types (a well-documented
+consequence of RLHF training\cite{brilliant2026selfcorrection}), pooling
+reinforces the overestimate.
+
+The steelman exchange disrupts this by requiring each model to argue that its
+own severity rating is too high. This activates a different prediction target
+than the default review framing, partially decorrelating the severity assessment
+from the shared failure modes that produce correlated over-rating.
+
+\subsection{Models}
+
+\begin{table}[h]
+\tbl{Models used across both benchmarks. Cross-family diversity provides
+partial decorrelation of failure modes.\cite{chen2024reconcile}}
+{\begin{tabular}{@{}llll@{}}
+\toprule
+Role & Model & Provider & Family \\
+\colrule
+Prover A & GPT-5.4 & OpenAI & GPT \\
+Prover B & DeepSeek V3.2 & DeepSeek & DeepSeek \\
+Arbiter & Claude Opus 4.6 & Anthropic & Claude \\
+\botrule
+\end{tabular}\label{tab:models}}
+\end{table}
+
+\subsection{Budgeted escalation and termination}
+
+The protocol includes a natural termination condition: when inter-prover
+agreement exceeds a threshold ($\theta_{\text{accept}} = 0.90$), the steelman
+exchange is skipped and the arbiter receives only the convergent reviews.
+
+In the SPOT evaluation ($n=50$), the escalation gate fired correctly: 3 papers
+hit L0 (agreement $\geq 0.90$) and skipped the steelman exchange; the
+remaining 47 escalated to L2 and ran the full adversarial exchange. This
+provides a stop condition that RLHF-trained review lacks: the protocol
+terminates when adversarial challenge produces no surviving severity disputes.
+
+
+\section{Benchmark 1: SPOT (Detection and Severity Ranking)}
+\label{sec:spot_results}
+
+\subsection{Design}
+
+We evaluated all four conditions on the text-detectable subset of the SPOT
+benchmark,\cite{son2025spot} which contains real published papers with
+human-validated errors. Papers with figure-dependent errors were excluded (our
+pipeline is text-only), yielding $n=50$ papers. All papers were anonymized
+before evaluation.
+
+\subsection{Detection results}
+
+GD achieves 36\% pass@1, the highest among evaluated conditions. Multi-model
+pooling (B3) provides modest improvement over single-model review (+6pp over
+B1), and the steelman exchange provides a further +6pp beyond pooling.
+Because our evaluation uses a text-detectable subset ($n=50$) with different
+prompting, while the published o3 result used the full multimodal benchmark
+($n=83$), the comparison with o3 should be interpreted as descriptive context
+rather than a controlled comparison.
+
+\subsection{Severity ranking: the actionability argument}
+
+Pass@1 measures whether the system found the annotated error somewhere in
+its output, typically a list of 10--15 findings per paper. For triage, the
+relevant question is not ``did it find something?'' but ``did it tell you
+this one is the problem?''
+
+GD finds more errors (19 TPs vs.\ B3's 16) and grades them better: the most
+true positives in the retraction-worthy tier (9 vs.\ B3's 6), the fewest
+total RW flags (77 vs.\ 97), and nearly double the within-tier precision
+(11.7\% vs.\ 6.2\%). A reviewer who reads only retraction-worthy findings
+gets the most genuine errors in the fewest flags.
+
+\subsection{Budget-matched controls}
+
+To control for compute budget, two additional conditions were evaluated at
+the same five API calls as GD ($n=49$; one paper excluded due to API content
+filter).
+
+\begin{table}[h]
+\tbl{Budget-matched conditions on SPOT ($n=49$). All three use five
+API calls with different framing for the additional passes.}
+{\begin{tabular}{@{}lccccc@{}}
+\toprule
+Condition & Calls & pass@1 & RW-prec. & RW-yield & RW/paper \\
+\colrule
+B3+: Neutral reflect & 5 & 22.4\% & 7.2\% (6/83) & 19.4\% & 1.69 \\
+B3++: Defend ratings & 5 & 36.7\% & 6.2\% (7/112) & 19.4\% & 2.29 \\
+GD: Steelman & 5 & 34.7\% & 10.5\% (8/76) & 29.6\% & 1.55 \\
+B3 (3-call ref.) & 3 & 28.6\% & 5.2\% (5/96) & 17.2\% & 1.96 \\
+\botrule
+\end{tabular}\label{tab:budget}}
+\end{table}
+
+\subsection{Scoring validation}
+
+True positive verification uses a five-layer validation stack:
+(1)~SPOT's author-acknowledged ground truth;
+(2)~SPOT's own LLM-as-judge matching protocol applied verbatim;
+(3)~two adversarial model audits following an 8-step verification protocol;
+(4)~manual human spot-check of a random sample (5/19 GD TPs, all confirmed);
+and (5)~blinded human verification by a graduate student who independently
+re-scored all final true-positive decisions without access to condition
+labels, achieving 100\% agreement.
+
+
+\section{Benchmark 2: Retracted Papers (Severity Calibration)}
+\label{sec:retracted_results}
+
+\subsection{Design}
+
+The SPOT benchmark tests detection and severity ranking but does not test
+false positives on sound papers. We constructed a benchmark of 10 retracted
+papers with documented methodological errors, paired with 19 non-retracted
+controls. All retracted papers post-date model training cutoffs. Ground truth
+was encoded as keyword-decomposed retraction causes. Full details are
+in Ref.~\refcite{brilliant2026benchmark}.
+
+Detection and false-positive scoring was performed by the first author,
+verified by in-family audit (1,395 judgments) and out-of-family audit (1,318
+findings scored by Grok~4 and Mistral Large~2, disjoint from the pipeline).
+
+\subsection{Results}
+
+Under OOF audit, GD detects all 10 retraction-causing errors (10/10) versus
+B3's 7/10, and produces fewer false positives (2/19 vs.\ 3/19). The original
+0/19 FP result under in-family audit does not survive independent verification.
+
+The steelman exchange's contribution on this benchmark is not detection but
+severity calibration: producing fewer false retraction-worthy classifications
+on controls than multi-model pooling.
+
+
+\section{Cross-Benchmark Analysis}
+
+The two benchmarks test different capabilities and tell a consistent story.
+On SPOT, the steelman exchange's primary effect is grading quality. On
+retracted papers under independent audit, the primary effect is
+discrimination. Both serve the same practical function: converting raw model
+output into ranked severity labels.
+
+The limited effect of multi-model pooling (B3) is equally informative. On
+SPOT, B3 provides modest detection improvement but no severity calibration
+improvement: its RW-precision (6.2\%) and RW-yield (20\%) match rubric-based
+single-model B2.
+
+
+\section{Why Pooling Does Not Improve Severity Calibration}
+\label{sec:theory}
+
+The empirical pattern admits a formal explanation. This section provides
+information-theoretic bounds that motivate the observations.
+
+\subsection{Setup}
+
+Let $G \sim p(g \mid x)$ be a generator, $S \sim p(s \mid x, g)$ a selector,
+and $T := \mathbb{I}\{G = H^\star(X)\}$ the correctness indicator.
+
+\textbf{Modeling assumption.} We assume $S \perp T \mid (G, Z)$ where
+$Z \in \mathcal{Z}$ indexes shared failure modes.
+
+\begin{theorem}[Information Bound via Shared Blind Spots]
+\label{thm:info_bound}
+Assume $S \perp T \mid (G, Z)$. Then:
+$I(T; S \mid G) \leq I(T; Z \mid G)$.
+If $T \perp Z \mid G$, then $I(T; S \mid G) = 0$.
+\end{theorem}
+
+\begin{lemma}[Repeated Self-Critique Bound]
+\label{lem:repeated}
+For $k$ selectors with $(S_1, \ldots, S_k) \perp T \mid (G, Z)$ jointly:
+$I(T; A_{1:k} \mid G) \leq I(T; Z \mid G)$.
+\end{lemma}
+
+Under correlated error, $k$ evaluations accumulate subjective confidence
+without accumulating objective evidence. This is consistent with B3's failure
+to improve severity calibration on either benchmark.
+
+\begin{proposition}[Sufficient Conditions for Positive Evidence]
+\label{prop:positive}
+Assume a selector satisfies $\Pr(A=1 \mid T=0) \leq 1-\epsilon$ and
+$\Pr(A=1 \mid T=1) \geq \delta$ for some $\delta > 1-\epsilon > 0$. Then
+acceptance provides $\log_2 \frac{\delta}{1-\epsilon} > 0$ bits of evidence
+about correctness.
+\end{proposition}
+
+The steelman exchange is designed to partially satisfy this condition,
+reducing false acceptance of overblown severity classifications.
+
+
+\section{Related Work}
+
+Liang et al.\cite{liang2024feedback} found GPT-4 feedback overlapped with
+human reviewers at 30--39\%. SPOT\cite{son2025spot} tests detection of
+verified errors (o3 achieves 18.4\% pass@1).
+FLAWS\cite{xi2025flaws} tests error localization.
+Pub-Guard-LLM\cite{chen2025pubguard} achieves $\sim$91\% on binary retraction
+classification. None test severity calibration.
+
+Du et al.\cite{du2024debate} showed multi-agent debate improves factuality.
+Huang et al.\cite{huang2024selfcorrect} showed debate performs no better than
+self-consistency at matched compute. Chen et al.\cite{chen2024reconcile} found
+model family diversity contributes 6.8\% of gains. Our architecture differs:
+models argue against their own positions (steelman), target severity rather
+than correctness, and preserve disagreement.
+
+Kim et al.\cite{kim2025correlated} document error correlation across 350+
+models. Li et al.\cite{li2024biases} identified 12 latent biases.
+Tsui\cite{tsui2025blindspot} found a 64.5\% self-correction failure rate.
+These motivate the adversarial self-challenge approach.
+
+
+\section{Limitations}
+
+\begin{enumerate}
+\item \textbf{Sample size.} The retracted-paper benchmark comprises $n=10$
+retracted papers with 19 controls. These results motivate larger-scale
+replication.
+
+\item \textbf{SPOT subset.} Results are on the text-detectable subset
+($n=50$), excluding $\sim$30 papers with figure-dependent errors.
+
+\item \textbf{Disputed scoring.} One SPOT discordant pair (paper\_014) was
+classified differently by two independent auditors. Strict scoring is reported
+throughout.
+
+\item \textbf{Retracted-paper scoring.} Initial scoring was performed by the
+first author, with independent multi-model audit and out-of-family audit
+verification. The in-family 0/19 FP result does not survive OOF verification
+(2/19). All audit data are released for independent adjudication.
+
+\item \textbf{Theoretical bounds require falsifiable Z.} The information
+bound is non-vacuous only when $Z$ is independently constrained.
+
+\item \textbf{Context separation is heuristic.} The steelman exchange
+partially disrupts error correlation but does not break parameter-level
+correlations from shared training.
+
+\item \textbf{Cost.} The full pipeline costs approximately \$1.25 per paper.
+\end{enumerate}
+
+
+\section{Discussion}
+
+All four architectures exceed SPOT's published o3 baseline on text-detectable
+errors. Detection performance has improved enough that unranked findings are
+now the practical bottleneck.
+
+The steelman exchange works not by finding more errors but by generating
+better judgments about errors already found. This is consistent with the
+theoretical framework: pooling correlated evaluators reinforces shared biases
+(Lemma~\ref{lem:repeated}), while adversarial challenge partially disrupts
+the correlation (Proposition~\ref{prop:positive}).
+
+To support practical adoption, the complete pipeline (including prompts,
+scoring code, model configurations, and a browser-based interface) is
+released as open-source infrastructure.
+
+
+\section{Conclusion}
+
+Actionable severity ranking, not raw detection, is the bottleneck for
+practical LLM-based scientific evaluation. Among the evaluated conditions,
+the steelman exchange is the only intervention that improves severity
+calibration across both benchmarks.
+
+On SPOT ($n=50$), it achieves 36\% pass@1 with 11.7\% retraction-worthy
+precision and the fewest top-tier flags per paper. On retracted papers
+($n=10$), GD detects all 10 retraction-causing errors with 2/19 false
+positives on controls under independent out-of-family audit, compared to
+B3's 7/10 detection with 3/19 false positives.
+
+All code, data, model outputs, and a replication harness are available at
+\texttt{https://github.com/AndBrilliant/GraduatedDissentBench}.
+
+
+\section*{Data Availability}
+All code, model outputs, scoring data, and audit reports are publicly
+available at \texttt{https://github.com/AndBrilliant/GraduatedDissentBench}.
+
+\section*{Use of AI Tools}
+This research evaluates large language models as the subject of study.
+All models used, their roles, and their outputs are documented in the
+methodology and released in the repository.
+
+\section*{Conflicts of Interest}
+The author is the developer of the graduated dissent protocol and the
+associated open-source software. The author has no financial interest in the
+models or API services used. No external funding was received.
+
+
+\bibliographystyle{ws-ijprai}
+\begin{thebibliography}{99}
+
+\bibitem{brilliant2026selfcorrection}
+A.~M.~Brilliant, Limits of self-correction in LLMs: An information-theoretic
+analysis of correlated errors, \textit{Preprints.org}, DOI:
+10.20944/preprints202601.0892.v3 (2026).
+
+\bibitem{brilliant2026graduated}
+A.~M.~Brilliant, Graduated dissent: Budgeted disagreement resolution for
+multi-model inference, \textit{Preprints.org}, DOI:
+10.20944/preprints202603.1830.v1 (2026).
+
+\bibitem{brilliant2026benchmark}
+A.~M.~Brilliant, The graduated dissent benchmark: A paired-ablation resource
+for multi-model manuscript review, in preparation (2026).
+
+\bibitem{huang2024selfcorrect}
+J.~Huang et al., Large language models cannot self-correct reasoning yet,
+\textit{Proc. ICLR} (2024).
+
+\bibitem{tsui2025blindspot}
+K.~Tsui, Self-correction bench, \textit{arXiv:2507.02778} (2025).
+
+\bibitem{kim2025correlated}
+E.~Kim, A.~Garg, K.~Peng and N.~Garg, Correlated errors in large language
+models, \textit{Proc. ICML} (2025).
+
+\bibitem{son2025spot}
+G.~Son et al., SPOT: A benchmark for automated verification of scientific
+research, \textit{arXiv:2505.11855} (2025).
+
+\bibitem{xi2025flaws}
+Y.~Xi et al., FLAWS: A benchmark for error identification,
+\textit{arXiv:2511.21843} (2025).
+
+\bibitem{chen2025pubguard}
+X.~Chen et al., Pub-Guard-LLM: Detecting retracted biomedical articles,
+\textit{arXiv:2502.15429} (2025).
+
+\bibitem{du2024debate}
+Y.~Du et al., Improving factuality through multiagent debate,
+\textit{Proc. ICML} (2024).
+
+\bibitem{chen2024reconcile}
+J.~C.-Y.~Chen, S.~Saha and M.~Bansal, ReConcile: Round-table conference
+improves reasoning, \textit{Proc. ACL} (2024).
+
+\bibitem{liang2024feedback}
+W.~Liang et al., Can large language models provide useful feedback on
+research papers? \textit{NEJM AI} \textbf{1}(8) (2024).
+
+\bibitem{li2024biases}
+J.~Li et al., Justice or prejudice? Quantifying biases in LLM-as-a-Judge,
+\textit{arXiv:2410.02736} (2024).
+
+\bibitem{wataoka2024selfpref}
+K.~Wataoka, T.~Takahashi and R.~Ri, Self-preference bias in LLM-as-a-Judge,
+\textit{arXiv:2410.21819} (2024).
+
+\bibitem{lightman2023verify}
+H.~Lightman et al., Let's verify step by step, \textit{arXiv:2305.20050}
+(2023).
+
+\bibitem{baba2025prover}
+K.~Baba et al., Prover Agent for formal mathematical proofs,
+\textit{arXiv:2506.19923} (2025).
+
+\bibitem{kobak2025llm}
+D.~Kobak et al., LLM-assisted writing in biomedical publications,
+\textit{Science Advances} \textbf{11}, eadt3813 (2025).
+
+\end{thebibliography}
+
+\end{document}
