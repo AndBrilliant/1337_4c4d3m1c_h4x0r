@@ -1,0 +1,31 @@
+# Source page for gerard_goffinet_herquet_2006
+Fetched: 2026-05-23 12:55  (urllib)
+URL: https://arxiv.org/abs/hep-ph/0510289
+Status: 200
+Title: [hep-ph/0510289] A New Look at an Old Mass Relation
+
+## Meta tags
+- `description`: Abstract page for arXiv paper hep-ph/0510289: A New Look at an Old Mass Relation
+- `og:type`: website
+- `og:site_name`: arXiv.org
+- `og:title`: A New Look at an Old Mass Relation
+- `og:url`: https://arxiv.org/abs/hep-ph/0510289v1
+- `og:image`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:secure_url`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:width`: 1200
+- `og:image:height`: 700
+- `og:image:alt`: arXiv logo
+- `og:description`: New data from neutrino oscillation experiments motivate us to extend a successful mass relation for the charged leptons to the other fundamental fermions. This new universal relation requires a Dirac mass around 3 10^-2 eV for the lightest neutrino and rules out a maximal atmospheric mixing. It also suggests a specific decomposition of the CKM mixing matrix.
+- `twitter:title`: A New Look at an Old Mass Relation
+- `citation_title`: A New Look at an Old Mass Relation
+- `citation_author`: Herquet, M.
+- `citation_doi`: 10.1016/j.physletb.2005.12.054
+- `citation_date`: 2005/10/21
+- `citation_online_date`: 2005/10/21
+- `citation_pdf_url`: https://arxiv.org/pdf/hep-ph/0510289
+- `citation_arxiv_id`: hep-ph/0510289
+- `citation_abstract`:  New data from neutrino oscillation experiments motivate us to extend a successful mass relation for the charged leptons to the other fundamental fermions. This new universal relation requires a Dirac mass around 3 10^-2 eV for the lightest neutrino and rules out a maximal atmospheric mixing. It also suggests a specific decomposition of the CKM mixing matrix.
+
+## Visible text
+
+[hep-ph/0510289] A New Look at an Old Mass Relation Skip to main content Learn about arXiv becoming an independent nonprofit. We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate &gt; hep-ph &gt; arXiv:hep-ph/0510289 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search open search GO open navigation menu quick links Login Help Pages About --> High Energy Physics - Phenomenology arXiv:hep-ph/0510289 (hep-ph) [Submitted on 21 Oct 2005] Title: A New Look at an Old Mass Relation Authors: J.-M. Gerard , F. Goffinet , M. Herquet View a PDF of the paper titled A New Look at an Old Mass Relation, by J.-M. Gerard and 1 other authors View PDF Abstract: New data from neutrino oscillation experiments motivate us to extend a successful mass relation for the charged leptons to the other fundamental fermions. This new universal relation requires a Dirac mass around 3 10^-2 eV for the lightest neutrino and rules out a maximal atmospheric mixing. It also suggests a specific decomposition of the CKM mixing matrix. Comments: 8 pages, 2 figures Subjects: High Energy Physics - Phenomenology (hep-ph) ; High Energy Physics - Experiment (hep-ex) Report&nbsp;number: UCL-IPT-05-11 Cite as: arXiv:hep-ph/0510289 &nbsp; (or arXiv:hep-ph/0510289v1 for this version) &nbsp; https://doi.org/10.48550/arXiv.hep-ph/0510289 Focus to learn more arXiv-issued DOI via DataCite Journal&nbsp;reference: Phys.Lett. B633 (2006) 563-566 Related DOI : https://doi.org/10.1016/j.physletb.2005.12.054 Focus to learn more DOI(s) linking to related resources Submission history From: Francois Goffinet [ view email ] [v1] Fri, 21 Oct 2005 14:36:47 UTC (38 KB) Full-text links: Access Paper: View a PDF of the paper titled A New Look at an Old Mass Relation, by J.-M. Gerard and 1 other authors View PDF TeX Source view license Current browse context: hep-ph &lt;&nbsp;prev &nbsp; | &nbsp; next&nbsp;&gt; new | recent | 2005-10 References &amp; Citations INSPIRE HEP NASA ADS Google Scholar Semantic Scholar export BibTeX citation Loading... BibTeX formatted citation &times; loading... Data provided by: Bookmark Bibliographic Tools Bibliographic and Citation Tools Bibliographic Explorer Toggle Bibliographic Explorer ( What is the Explorer? ) Connected Papers Toggle Connected Papers ( What is Connected Papers? ) Litmaps Toggle Litmaps ( What is Litmaps? ) scite.ai Toggle scite Smart Citations ( What are Smart Citations? ) Code, Data, Media Code, Data and Media Associated with this Article alphaXiv Toggle alphaXiv ( What is alphaXiv? ) Links to Code Toggle CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) DagsHub Toggle DagsHub ( What is DagsHub? ) GotitPub Toggle Gotit.pub ( What is GotitPub? ) Huggingface Toggle Hugging Face ( What is Huggingface? ) Links to Code Toggle Papers with Code ( What is Papers with Code? ) ScienceCast Toggle ScienceCast ( What is ScienceCast? ) Demos Demos Replicate Toggle Replicate ( What is Replicate? ) Spaces Toggle Hugging Face Spaces ( What is Spaces? ) Spaces Toggle TXYZ.AI ( What is TXYZ.AI? ) Related Papers Recommenders and Search Tools Link to Influence Flower Influence Flower ( What are Influence Flowers? ) Core recommender toggle CORE Recommender ( What is CORE? ) IArxiv recommender toggle IArxiv Recommender ( What is IArxiv? ) Author Venue Institution Topic About arXivLabs arXivLabs: experimental projects with community collaborators arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website. Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them. Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs . Which authors of this paper are endorsers? | Disable MathJax ( What is MathJax? ) About Help contact arXiv Click here to contact arXiv Contact subscribe to arXiv mailings Click here to subscribe Subscribe Copyright Privacy Policy Web Accessibility Assistance arXiv Operational Status
