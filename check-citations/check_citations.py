@@ -583,9 +583,14 @@ class CitationResult:
         return bool(self.meta_report) and self.meta_report.verdict == "AUTHOR_MISMATCH_SAME_PAPER"
 
     @property
+    def journal_field_mismatch(self) -> bool:
+        return bool(self.meta_report) and self.meta_report.verdict == "JOURNAL_FIELD_MISMATCH"
+
+    @property
     def unanimous_pass(self) -> bool:
         if (self.hard_fail or self.metadata_fail or
-                self.wrong_arxiv_same_paper or self.author_mismatch_same_paper):
+                self.wrong_arxiv_same_paper or self.author_mismatch_same_paper or
+                self.journal_field_mismatch):
             return False
         verdicts = [v.get("verdict") for v in self.by_model.values()]
         return len(verdicts) == len(MODELS_TO_USE) and all(v == "PASS" for v in verdicts)
@@ -600,6 +605,8 @@ class CitationResult:
             return "⚠ WRONG ARXIV ID — same paper, autofix available"
         if self.author_mismatch_same_paper:
             return "⚠ AUTHOR MISMATCH — same paper, bib author correction needed"
+        if self.journal_field_mismatch:
+            return "⚠ JOURNAL FIELD MISMATCH — right paper, wrong volume/page/year/venue"
         if self.unanimous_pass:
             return "✓ unanimous PASS"
         return "⚠ dissent / FLAG"
@@ -617,11 +624,13 @@ def md_report(results: list[CitationResult], orphan_bib: list[str],
     n_metafail = sum(1 for r in results if r.metadata_fail)
     n_autofix = sum(1 for r in results if r.wrong_arxiv_same_paper)
     n_authmis = sum(1 for r in results if r.author_mismatch_same_paper)
-    n_soft = len(results) - n_pass - n_hard - n_metafail - n_autofix - n_authmis
+    n_jfmis = sum(1 for r in results if r.journal_field_mismatch)
+    n_soft = len(results) - n_pass - n_hard - n_metafail - n_autofix - n_authmis - n_jfmis
     lines.append(f"- unanimous PASS: {n_pass}")
     lines.append(f"- metadata FAIL (deterministic — different paper): {n_metafail}")
     lines.append(f"- wrong arXiv ID but same paper (autofix): {n_autofix}")
     lines.append(f"- author mismatch (same paper, bib needs author fix): {n_authmis}")
+    lines.append(f"- journal-field mismatch (volume/page/year/venue wrong): {n_jfmis}")
     lines.append(f"- LLM dissent / FLAG (claim or archival): {n_soft}")
     lines.append(f"- HARD FAIL (no evidence — bot-block or 404): {n_hard}")
     lines.append(f"- API spend: ${cost.get('total_cost_usd', 0):.4f} "

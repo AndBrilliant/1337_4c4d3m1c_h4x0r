@@ -60,6 +60,108 @@ TEX_TITLE_PATS = [
 ]
 
 
+# MDPI / journal-of-record style: `Authors. Plain-text Title. \textit{Venue}
+# \textbf{Year}, \textit{Volume}, pages, \url{...}.`  The first \textit{} is
+# the VENUE here, not the title — confusion this regex disambiguates.
+#
+# Key signal: a \textbf{<4-digit year>} follows the first \textit{}.  When
+# that's true we know the first \textit{} is a venue (journal, "arXiv",
+# "Zenodo", etc.) and the title is plain text BEFORE it.
+_MDPI_VENUE_YEAR_RE = re.compile(
+    r"\\textit\s*\{[^}]*\}\s*\\textbf\s*\{\s*\d{4}\s*\}",
+    re.IGNORECASE,
+)
+_FIRST_TEXTIT_RE = re.compile(r"\\textit\s*\{", re.IGNORECASE)
+# Boundary between authors and title in MDPI: the LAST occurrence of
+# "<capital>.\s+(?=[A-Z0-9])" before the first \textit{}.  After the last
+# author entry, there's an initial like "D." or "V.", then a space, then the
+# title-start capital letter.  Author lists internally have "<initial>.<initial>."
+# (e.g., "J.C.") with no space between, so those don't match.
+_INITIAL_TITLE_BOUNDARY_RE = re.compile(
+    r"(?<=[A-Z])\.\s+(?=[A-Z0-9])",
+)
+
+
+def is_mdpi_journal_bibitem(raw: str) -> bool:
+    """Detect MDPI-style journal-article bibitem.
+
+    Returns True if the FIRST \\textit{} is followed by \\textbf{<year>} —
+    in that case \\textit{} is the venue, not the title.  Books and other
+    `\\textit{Title}` patterns return False (\\textbf{year} is absent).
+    """
+    if "\\newblock" in raw:
+        return False
+    return bool(_MDPI_VENUE_YEAR_RE.search(raw))
+
+
+def extract_mdpi_title(raw: str) -> str | None:
+    """Title for MDPI-style journal articles: plain text between author block
+    and the venue \\textit{}.  See ``is_mdpi_journal_bibitem``.
+    """
+    work = re.sub(r"^\s*\\bibitem\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*", "", raw, count=1)
+    m_venue = _FIRST_TEXTIT_RE.search(work)
+    if not m_venue:
+        return None
+    before_venue = work[:m_venue.start()].rstrip().rstrip(",").rstrip()
+    # Find the LAST "<initial>.\s+(?=capital)" boundary — that's where the
+    # title starts after the author list.
+    boundaries = list(_INITIAL_TITLE_BOUNDARY_RE.finditer(before_venue))
+    if not boundaries:
+        return None
+    title_start = boundaries[-1].end()
+    title = before_venue[title_start:].strip().rstrip(".").rstrip()
+    return title or None
+
+
+def extract_mdpi_authors_region(raw: str) -> str | None:
+    """Author segment for MDPI-style journal articles: everything from start of
+    bibitem up to (but not including) the title-start boundary.
+    """
+    work = re.sub(r"^\s*\\bibitem\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*", "", raw, count=1)
+    m_venue = _FIRST_TEXTIT_RE.search(work)
+    if not m_venue:
+        return None
+    before_venue = work[:m_venue.start()].rstrip().rstrip(",").rstrip()
+    boundaries = list(_INITIAL_TITLE_BOUNDARY_RE.finditer(before_venue))
+    if not boundaries:
+        return None
+    return before_venue[:boundaries[-1].start() + 1]  # keep the trailing period
+
+
+# MDPI venue/volume/pages extraction — used by the journal cross-check.
+_MDPI_VENUE_RE = re.compile(r"\\textit\s*\{([^}]+)\}\s*\\textbf\s*\{\s*(\d{4})\s*\}", re.IGNORECASE)
+_MDPI_VOLUME_RE = re.compile(
+    r"\\textbf\s*\{\s*\d{4}\s*\}\s*,\s*\\textit\s*\{([^}]+)\}",
+    re.IGNORECASE,
+)
+_MDPI_PAGES_RE = re.compile(
+    r"\\textit\s*\{[^}]+\}\s*,\s*(\d+)(?:--?(\d+))?",
+    re.IGNORECASE,
+)
+
+
+def extract_mdpi_journal_meta(raw: str) -> dict:
+    """Return {venue, year, volume, first_page, last_page} from an MDPI bibitem.
+
+    Only fields actually present are included.  No keys when not MDPI.
+    """
+    out: dict[str, str] = {}
+    m = _MDPI_VENUE_RE.search(raw)
+    if not m:
+        return out
+    out["venue"] = m.group(1).strip()
+    out["year"] = m.group(2)
+    m = _MDPI_VOLUME_RE.search(raw)
+    if m:
+        out["volume"] = m.group(1).strip()
+    m = _MDPI_PAGES_RE.search(raw)
+    if m:
+        out["first_page"] = m.group(1)
+        if m.group(2):
+            out["last_page"] = m.group(2)
+    return out
+
+
 # ── Normalization ───────────────────────────────────────────────────────
 
 def _strip_latex(s: str) -> str:
@@ -169,13 +271,24 @@ def extract_bibitem_title(raw: str) -> str | None:
     """Best-effort guess of the bib entry's title.
 
     Heuristic order:
+      0. MDPI / journal-of-record format: `Authors. Title. \\textit{Venue}
+         \\textbf{Year}, ...` — first \\textit is the VENUE, title is plain
+         text before it.  Detected via ``is_mdpi_journal_bibitem``.
       1. \\newblock-delimited second segment (natbib convention).
       2. \\emph{...} content.
       3. \\textit{...} content.
     Returns None if no candidate was found.
     """
-    # natbib bib entries are typically:  Authors. \newblock Title. \newblock Venue.
-    # We want the SECOND chunk (the title), so we split by \newblock and pick [1].
+    # Rule 0: MDPI journal-article format.  Must come first because the FIRST
+    # \textit{} in MDPI is the venue, not the title — checking rule 3 first
+    # would extract "Phys. Lett. B" or "arXiv" as the title and FAIL the bib
+    # against the source page's real title.
+    if is_mdpi_journal_bibitem(raw):
+        t = extract_mdpi_title(raw)
+        if t:
+            return t
+
+    # Rule 1: natbib \newblock convention.
     parts = re.split(r"\\newblock", raw)
     if len(parts) >= 2:
         cand = parts[1].strip()
@@ -185,6 +298,7 @@ def extract_bibitem_title(raw: str) -> str | None:
         cand = cand.rstrip(". \n")
         if cand:
             return cand
+    # Rules 2 + 3: italic-delimited title (book convention, or fallback).
     for pat in TEX_TITLE_PATS[1:]:
         m = pat.search(raw)
         if m:
@@ -264,6 +378,48 @@ def _surname_of(name: str) -> str:
     return n
 
 
+def _surnames_from_head(head: str) -> tuple[list[str], bool]:
+    """Strip LaTeX, split on author separators, return (surnames, has_etal).
+    Shared by all bibitem-format branches in ``extract_bib_authors``.
+
+    Handles two author-list conventions:
+      - MDPI:  ``Surname, J.; Surname, K.; Surname, L.``  (semicolon between
+        authors; surname-comma-initial within each entry)
+      - natbib: ``First Last, First Last, and First Last``  (comma or "and"
+        between authors)
+
+    Detected by looking for ``; ``: if present, the list uses MDPI style and
+    we split on ``;`` first (so initials like "J.C." don't get tokenized as
+    a fake surname).
+    """
+    head = re.sub(r"\\[a-zA-Z]+\*?\{([^{}]*)\}", r"\1", head)
+    head = re.sub(r"\\[a-zA-Z]+\*?", " ", head)
+    head = head.replace("{", "").replace("}", "")
+    head = head.replace("~", " ")
+    has_etal = bool(_ETAL_RE.search(head))
+    head = _ETAL_RE.sub("", head)
+
+    if ";" in head:
+        # MDPI form: split on ";", each chunk is one author "Surname, Initials".
+        author_chunks = re.split(r";\s*", head)
+    else:
+        # natbib / standard form: split on commas + "and".
+        author_chunks = re.split(r",\s*|\s+and\s+", head)
+
+    surnames: list[str] = []
+    for t in author_chunks:
+        t = t.strip(".  ")
+        if not t:
+            continue
+        # Skip parenthesized collaboration tags like "(LSND Collaboration)".
+        if re.match(r"^\s*\(", t):
+            continue
+        sn = _surname_of(t)
+        if sn and len(sn) >= 2:
+            surnames.append(sn)
+    return surnames, has_etal
+
+
 def extract_bib_authors(bibitem_raw: str) -> tuple[list[str], bool]:
     """Return (list of surnames, has_etal_truncation).
 
@@ -285,6 +441,14 @@ def extract_bib_authors(bibitem_raw: str) -> tuple[list[str], bool]:
     names as bogus "authors".  See v3.1 regression: jumper2021 → ['jumper',
     'alphafold'], barut1979 → ['barut', 'formula', 'physrevlett'].
     """
+    # Rule 0: MDPI journal-article boundary — the title is plain text BEFORE
+    # the first \textit{} (which is the venue).  Author block is everything
+    # up to the "<initial>.\s+(?=capital)" title-start boundary.
+    if is_mdpi_journal_bibitem(bibitem_raw):
+        mdpi_authors = extract_mdpi_authors_region(bibitem_raw)
+        if mdpi_authors:
+            return _surnames_from_head(mdpi_authors)
+
     # Trim leading "\bibitem[...]{key}" first so its key tokens don't leak in.
     raw = re.sub(r"\\bibitem\s*(?:\[[^\]]*\])?\s*\{[^}]+\}\s*", "", bibitem_raw)
 
@@ -310,27 +474,7 @@ def extract_bib_authors(bibitem_raw: str) -> tuple[list[str], bool]:
         candidates = [p.start() for p in (m, m_italic) if p]
         head = raw[:min(candidates)] if candidates else raw
 
-    # Strip LaTeX commands (e.g. \textbf{...}, \\&) — keep the argument so
-    # capitalized name fragments like {K}oide survive.
-    head = re.sub(r"\\[a-zA-Z]+\*?\{([^{}]*)\}", r"\1", head)
-    head = re.sub(r"\\[a-zA-Z]+\*?", " ", head)
-    head = head.replace("{", "").replace("}", "")
-    # Strip tildes which are LaTeX non-breaking spaces.
-    head = head.replace("~", " ")
-    has_etal = bool(_ETAL_RE.search(head))
-    head = _ETAL_RE.sub("", head)
-    # Split on commas + "and"
-    tokens = [t.strip(".  ") for t in _AUTHOR_SEPARATORS.split(head) if t.strip(".  ")]
-    surnames = []
-    for t in tokens:
-        # Skip tokens that look like parenthesized collaboration tags, e.g.
-        # "(LSND Collaboration)" → would otherwise contribute "collaboration".
-        if re.match(r"^\s*\(", t):
-            continue
-        sn = _surname_of(t)
-        if sn and len(sn) >= 2:  # ignore one-letter or empty fragments
-            surnames.append(sn)
-    return surnames, has_etal
+    return _surnames_from_head(head)
 
 
 def extract_source_authors(fetched: dict) -> list[str]:
@@ -403,6 +547,17 @@ class MetadataReport:
                           subset of source's).  Right paper, fabricated
                           author info.  Fixable in the bib without touching
                           body text.
+      - ``"JOURNAL_FIELD_MISMATCH"`` (v3.3)
+                        — DOI/arXiv/title all match (right paper) but one
+                          of the journal coordinates (venue name, year,
+                          volume, first page) in the bib disagrees with the
+                          publisher's metadata.  Right paper, wrong journal
+                          coordinates in the bib — fix the bib volume/page
+                          numbers without touching body text.
+
+    Journal-field comparisons (v3.3) populate ``bib_venue/bib_year/
+    bib_volume/bib_first_page`` and the corresponding ``src_*`` slots when
+    available so reports can show "bib says X, source says Y" deterministically.
     """
     verdict: str = "PASS"
     rationale: list[str] = field(default_factory=list)
@@ -417,6 +572,16 @@ class MetadataReport:
     src_authors: list[str] = field(default_factory=list)
     # If WRONG_ARXIV_SAME_PAPER, the corrected eprint to use:
     suggested_arxiv: str | None = None
+    # v3.3 — journal-coordinate fields populated only when both sides expose them.
+    bib_venue: str | None = None
+    bib_year: str | None = None
+    bib_volume: str | None = None
+    bib_first_page: str | None = None
+    src_venue: str | None = None
+    src_year: str | None = None
+    src_volume: str | None = None
+    src_first_page: str | None = None
+    journal_field_mismatches: list[str] = field(default_factory=list)
 
 
 def _check_authors(r: MetadataReport) -> None:
@@ -480,6 +645,75 @@ def _check_authors(r: MetadataReport) -> None:
     )
 
 
+def _normalize_venue(v: str) -> str:
+    """Normalize a journal name for substring comparison.
+    Lowercase, drop punctuation and 'the/and', collapse whitespace.  Catches
+    "Phys. Lett. B" == "Physics Letters B".
+    """
+    v = re.sub(r"[^a-zA-Z0-9 ]+", " ", (v or "").lower())
+    v = re.sub(r"\b(?:the|and|of|in|for)\b", "", v)
+    v = re.sub(r"\bphys\b", "physics", v)
+    v = re.sub(r"\brev\b", "review", v)
+    v = re.sub(r"\blett\b", "letters", v)
+    v = re.sub(r"\bmod\b", "modern", v)
+    v = re.sub(r"\bj\b", "journal", v)
+    v = re.sub(r"\bint\b", "international", v)
+    v = re.sub(r"\beur\b", "european", v)
+    return re.sub(r"\s+", " ", v).strip()
+
+
+def _check_journal_fields(r: MetadataReport) -> None:
+    """Apply per-coordinate journal-field comparisons.  Only runs after the
+    paper-identity rules have established a tentative ``PASS``.  Downgrades
+    to ``JOURNAL_FIELD_MISMATCH`` when bib coordinates disagree with the
+    publisher's metadata.
+
+    Compares: venue (canonical name), year, volume, first-page.  Skips any
+    field where either side is missing.  arXiv-only bibs (venue=='arXiv'
+    on the bib side) are skipped because the corresponding source fields
+    don't exist meaningfully.
+    """
+    # arXiv-only bibitems don't have journal coordinates to check.
+    if r.bib_venue and r.bib_venue.strip().lower() in {"arxiv", "preprint",
+                                                       "arxiv preprint",
+                                                       "zenodo"}:
+        return
+    if r.verdict != "PASS":
+        return
+    mismatches: list[str] = []
+
+    # Year — strong signal; bib should be the publication year.
+    if r.bib_year and r.src_year:
+        if r.bib_year.strip()[:4] != r.src_year.strip()[:4]:
+            mismatches.append(f"year: bib={r.bib_year!r} vs src={r.src_year!r}")
+
+    # Volume — exact-string compare after stripping leading zeros.
+    if r.bib_volume and r.src_volume:
+        bv = r.bib_volume.strip().lstrip("0") or "0"
+        sv = r.src_volume.strip().lstrip("0") or "0"
+        if bv != sv:
+            mismatches.append(f"volume: bib={r.bib_volume!r} vs src={r.src_volume!r}")
+
+    # First page.
+    if r.bib_first_page and r.src_first_page:
+        bp = r.bib_first_page.strip().lstrip("0") or "0"
+        sp = r.src_first_page.strip().lstrip("0") or "0"
+        if bp != sp:
+            mismatches.append(f"first_page: bib={r.bib_first_page!r} vs src={r.src_first_page!r}")
+
+    # Venue — substring containment in either direction on the canonical form.
+    if r.bib_venue and r.src_venue:
+        bv = _normalize_venue(r.bib_venue)
+        sv = _normalize_venue(r.src_venue)
+        if bv and sv and (bv not in sv and sv not in bv):
+            mismatches.append(f"venue: bib={r.bib_venue!r} vs src={r.src_venue!r}")
+
+    if mismatches:
+        r.journal_field_mismatches = mismatches
+        r.rationale.append("JOURNAL FIELD MISMATCH: " + "; ".join(mismatches))
+        r.verdict = "JOURNAL_FIELD_MISMATCH"
+
+
 def metadata_check(bibitem_raw: str, fetched: dict | None,
                    pdf_path_basename: str | None = None) -> MetadataReport:
     """Apply the deterministic checks. Pure function.
@@ -493,6 +727,12 @@ def metadata_check(bibitem_raw: str, fetched: dict | None,
     r.bib_arxiv  = extract_arxiv(bibitem_raw)
     r.bib_title  = extract_bibitem_title(bibitem_raw)
     r.bib_authors, r.bib_etal = extract_bib_authors(bibitem_raw)
+    # v3.3 — journal coordinates from MDPI-style bibitems.
+    bib_jmeta = extract_mdpi_journal_meta(bibitem_raw)
+    r.bib_venue = bib_jmeta.get("venue")
+    r.bib_year = bib_jmeta.get("year")
+    r.bib_volume = bib_jmeta.get("volume")
+    r.bib_first_page = bib_jmeta.get("first_page")
 
     if fetched:
         meta = fetched.get("meta") or {}
@@ -502,6 +742,17 @@ def metadata_check(bibitem_raw: str, fetched: dict | None,
         r.src_arxiv = (extract_final_url_arxiv(fetched.get("final_url", ""))
                        or extract_arxiv(fetched.get("text_excerpt", "") or ""))
         r.src_authors = extract_source_authors(fetched)
+        # Source journal coordinates from common meta keys.
+        r.src_venue = meta.get("citation_journal_title") or meta.get("prism.publicationName")
+        _src_year_raw = (meta.get("citation_publication_date")
+                          or meta.get("citation_year") or meta.get("dc.date")
+                          or meta.get("prism.publicationDate") or "")
+        if _src_year_raw:
+            _m_y = re.search(r"\d{4}", _src_year_raw)
+            r.src_year = _m_y.group(0) if _m_y else None
+        r.src_volume = meta.get("citation_volume") or meta.get("prism.volume")
+        r.src_first_page = (meta.get("citation_firstpage")
+                             or meta.get("prism.startingPage"))
     elif pdf_path_basename:
         # When evidence is a local PDF, we don't have HTML meta.  Trust that
         # the PDF the user provided matches the bibitem (their explicit
@@ -517,6 +768,7 @@ def metadata_check(bibitem_raw: str, fetched: dict | None,
             r.rationale.append(f"DOI exact-match (case-folded): {normalize_doi(r.bib_doi)}")
             r.verdict = "PASS"
             _check_authors(r)
+            _check_journal_fields(r)
             return r
         else:
             r.rationale.append(
@@ -547,6 +799,7 @@ def metadata_check(bibitem_raw: str, fetched: dict | None,
                     return r
             r.verdict = "PASS"
             _check_authors(r)
+            _check_journal_fields(r)
             return r
         else:
             # arXiv IDs differ — check whether titles agree (wrong ID, same
@@ -576,6 +829,7 @@ def metadata_check(bibitem_raw: str, fetched: dict | None,
                 )
                 r.verdict = "PASS"
                 _check_authors(r)
+                _check_journal_fields(r)
                 return r
             r.rationale.append(
                 f"title MISMATCH (neither is substring of the other): "
