@@ -1,0 +1,31 @@
+# Source page for kleppe_2025
+Fetched: 2026-05-23 13:02  (urllib)
+URL: https://arxiv.org/abs/2504.02104
+Status: 200
+Title: [2504.02104] Quark mass matrices inspired by a numerical relation
+
+## Meta tags
+- `description`: Abstract page for arXiv paper 2504.02104: Quark mass matrices inspired by a numerical relation
+- `og:type`: website
+- `og:site_name`: arXiv.org
+- `og:title`: Quark mass matrices inspired by a numerical relation
+- `og:url`: https://arxiv.org/abs/2504.02104v1
+- `og:image`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:secure_url`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:width`: 1200
+- `og:image:height`: 700
+- `og:image:alt`: arXiv logo
+- `og:description`: In 1981, Yoshio Koide noticed that the square root values of the charged lepton masses satisfy the relation \[ Q=\frac{m_e+m_μ+m_τ}{(\sqrt{m_e}+\sqrt{m_μ}+\sqrt{m_τ})^2} \approx \frac{2}{3} \] Inspired by this relation, we introduce tentative mass matrices, using numerical values, and find matrices that display an underlying democratic texture.
+- `twitter:title`: Quark mass matrices inspired by a numerical relation
+- `citation_title`: Quark mass matrices inspired by a numerical relation
+- `citation_author`: Kleppe, A. C.
+- `citation_doi`: 10.51746/9789612974848
+- `citation_date`: 2025/04/02
+- `citation_online_date`: 2025/04/02
+- `citation_pdf_url`: https://arxiv.org/pdf/2504.02104
+- `citation_arxiv_id`: 2504.02104
+- `citation_abstract`: In 1981, Yoshio Koide noticed that the square root values of the charged lepton masses satisfy the relation \[ Q=\frac{m_e+m_{\mu}+m_{\tau}}{(\sqrt{m_e}+\sqrt{m_{\mu}}+\sqrt{m_{\tau}})^2} \approx \frac{2}{3} \] Inspired by this relation, we introduce tentative mass matrices, using numerical values, and find matrices that display an underlying democratic texture.
+
+## Visible text
+
+[2504.02104] Quark mass matrices inspired by a numerical relation Skip to main content Learn about arXiv becoming an independent nonprofit. We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate &gt; hep-ph &gt; arXiv:2504.02104 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search GO quick links Login Help Pages About --> High Energy Physics - Phenomenology arXiv:2504.02104 (hep-ph) [Submitted on 2 Apr 2025] Title: Quark mass matrices inspired by a numerical relation Authors: A. C. Kleppe View a PDF of the paper titled Quark mass matrices inspired by a numerical relation, by A. C. Kleppe View PDF HTML (experimental) Abstract: In 1981, Yoshio Koide noticed that the square root values of the charged lepton masses satisfy the relation \[ Q=\frac{m_e+m_{\mu}+m_{\tau}}{(\sqrt{m_e}+\sqrt{m_{\mu}}+\sqrt{m_{\tau}})^2} \approx \frac{2}{3} \] Inspired by this relation, we introduce tentative mass matrices, using numerical values, and find matrices that display an underlying democratic texture. Subjects: High Energy Physics - Phenomenology (hep-ph) Cite as: arXiv:2504.02104 [hep-ph] &nbsp; (or arXiv:2504.02104v1 [hep-ph] for this version) &nbsp; https://doi.org/10.48550/arXiv.2504.02104 Focus to learn more arXiv-issued DOI via DataCite Journal&nbsp;reference: Proceedings to the 27th workshop What Comes Beyond the Standard Models, Vol.25, 2024, p. 87 - 101 Related DOI : https://doi.org/10.51746/9789612974848 Focus to learn more DOI(s) linking to related resources Submission history From: Astri Kleppe [ view email ] [v1] Wed, 2 Apr 2025 20:10:26 UTC (59 KB) Full-text links: Access Paper: View a PDF of the paper titled Quark mass matrices inspired by a numerical relation, by A. C. Kleppe View PDF HTML (experimental) TeX Source view license Current browse context: hep-ph &lt;&nbsp;prev &nbsp; | &nbsp; next&nbsp;&gt; new | recent | 2025-04 References &amp; Citations INSPIRE HEP NASA ADS Google Scholar Semantic Scholar export BibTeX citation Loading... BibTeX formatted citation &times; loading... Data provided by: Bookmark Bibliographic Tools Bibliographic and Citation Tools Bibliographic Explorer Toggle Bibliographic Explorer ( What is the Explorer? ) Connected Papers Toggle Connected Papers ( What is Connected Papers? ) Litmaps Toggle Litmaps ( What is Litmaps? ) scite.ai Toggle scite Smart Citations ( What are Smart Citations? ) Code, Data, Media Code, Data and Media Associated with this Article alphaXiv Toggle alphaXiv ( What is alphaXiv? ) Links to Code Toggle CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) DagsHub Toggle DagsHub ( What is DagsHub? ) GotitPub Toggle Gotit.pub ( What is GotitPub? ) Huggingface Toggle Hugging Face ( What is Huggingface? ) ScienceCast Toggle ScienceCast ( What is ScienceCast? ) Demos Demos Replicate Toggle Replicate ( What is Replicate? ) Spaces Toggle Hugging Face Spaces ( What is Spaces? ) Spaces Toggle TXYZ.AI ( What is TXYZ.AI? ) Related Papers Recommenders and Search Tools Link to Influence Flower Influence Flower ( What are Influence Flowers? ) Core recommender toggle CORE Recommender ( What is CORE? ) IArxiv recommender toggle IArxiv Recommender ( What is IArxiv? ) Author Venue Institution Topic About arXivLabs arXivLabs: experimental projects with community collaborators arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website. Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them. Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs . Which authors of this paper are endorsers? | Disable MathJax ( What is MathJax? ) About Help contact arXiv Click here to contact arXiv Contact subscribe to arXiv mailings Click here to subscribe Subscribe Copyright Privacy Policy Web Accessibility Assistance arXiv Operational Status

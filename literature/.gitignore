@@ -1,0 +1,8 @@
+.DS_Store
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+venv/
+__pycache__/

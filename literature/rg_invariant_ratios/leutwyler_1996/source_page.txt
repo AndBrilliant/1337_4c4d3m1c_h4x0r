@@ -1,0 +1,31 @@
+# Source page for leutwyler_1996
+Fetched: 2026-05-23 13:01  (urllib)
+URL: https://arxiv.org/abs/hep-ph/9602366
+Status: 200
+Title: [hep-ph/9602366] The ratios of the light quark masses
+
+## Meta tags
+- `description`: Abstract page for arXiv paper hep-ph/9602366: The ratios of the light quark masses
+- `og:type`: website
+- `og:site_name`: arXiv.org
+- `og:title`: The ratios of the light quark masses
+- `og:url`: https://arxiv.org/abs/hep-ph/9602366v1
+- `og:image`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:secure_url`: /static/browse/0.3.4/images/arxiv-logo-fb.png
+- `og:image:width`: 1200
+- `og:image:height`: 700
+- `og:image:alt`: arXiv logo
+- `og:description`: The paper collects the various pieces of information concerning the relative size of m_u, m_d and m_s. A coherent picture results, which constrains the mass ratios to a rather narrow range: m_u/m_d = 0.553 \pm 0.043, m_s/m_d = 18.9 \pm 0.8.
+- `twitter:title`: The ratios of the light quark masses
+- `citation_title`: The ratios of the light quark masses
+- `citation_author`: Leutwyler, H.
+- `citation_doi`: 10.1016/0370-2693(96)00386-3
+- `citation_date`: 1996/02/22
+- `citation_online_date`: 1996/02/22
+- `citation_pdf_url`: https://arxiv.org/pdf/hep-ph/9602366
+- `citation_arxiv_id`: hep-ph/9602366
+- `citation_abstract`:  The paper collects the various pieces of information concerning the relative size of m_u, m_d and m_s. A coherent picture results, which constrains the mass ratios to a rather narrow range: m_u/m_d = 0.553 \pm 0.043, m_s/m_d = 18.9 \pm 0.8.
+
+## Visible text
+
+[hep-ph/9602366] The ratios of the light quark masses Skip to main content Learn about arXiv becoming an independent nonprofit. We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate &gt; hep-ph &gt; arXiv:hep-ph/9602366 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search open search GO open navigation menu quick links Login Help Pages About --> High Energy Physics - Phenomenology arXiv:hep-ph/9602366 (hep-ph) [Submitted on 22 Feb 1996] Title: The ratios of the light quark masses Authors: H. Leutwyler (Univ. Bern and CERN) View a PDF of the paper titled The ratios of the light quark masses, by H. Leutwyler (Univ. Bern and CERN) View PDF Abstract: The paper collects the various pieces of information concerning the relative size of m_u, m_d and m_s. A coherent picture results, which constrains the mass ratios to a rather narrow range: m_u/m_d = 0.553 \pm 0.043, m_s/m_d = 18.9 \pm 0.8. Comments: 11 pages, 2 figures Subjects: High Energy Physics - Phenomenology (hep-ph) Report&nbsp;number: CERN-TH/96-44 Cite as: arXiv:hep-ph/9602366 &nbsp; (or arXiv:hep-ph/9602366v1 for this version) &nbsp; https://doi.org/10.48550/arXiv.hep-ph/9602366 Focus to learn more arXiv-issued DOI via DataCite Journal&nbsp;reference: Phys.Lett.B378:313-318,1996 Related DOI : https://doi.org/10.1016/0370-2693%2896%2900386-3 Focus to learn more DOI(s) linking to related resources Submission history From: Leutwyler Heinrich [ view email ] [v1] Thu, 22 Feb 1996 09:45:16 UTC (22 KB) Full-text links: Access Paper: View a PDF of the paper titled The ratios of the light quark masses, by H. Leutwyler (Univ. Bern and CERN) View PDF TeX Source view license Current browse context: hep-ph &lt;&nbsp;prev &nbsp; | &nbsp; next&nbsp;&gt; new | recent | 1996-02 References &amp; Citations INSPIRE HEP NASA ADS Google Scholar Semantic Scholar export BibTeX citation Loading... BibTeX formatted citation &times; loading... Data provided by: Bookmark Bibliographic Tools Bibliographic and Citation Tools Bibliographic Explorer Toggle Bibliographic Explorer ( What is the Explorer? ) Connected Papers Toggle Connected Papers ( What is Connected Papers? ) Litmaps Toggle Litmaps ( What is Litmaps? ) scite.ai Toggle scite Smart Citations ( What are Smart Citations? ) Code, Data, Media Code, Data and Media Associated with this Article alphaXiv Toggle alphaXiv ( What is alphaXiv? ) Links to Code Toggle CatalyzeX Code Finder for Papers ( What is CatalyzeX? ) DagsHub Toggle DagsHub ( What is DagsHub? ) GotitPub Toggle Gotit.pub ( What is GotitPub? ) Huggingface Toggle Hugging Face ( What is Huggingface? ) Links to Code Toggle Papers with Code ( What is Papers with Code? ) ScienceCast Toggle ScienceCast ( What is ScienceCast? ) Demos Demos Replicate Toggle Replicate ( What is Replicate? ) Spaces Toggle Hugging Face Spaces ( What is Spaces? ) Spaces Toggle TXYZ.AI ( What is TXYZ.AI? ) Related Papers Recommenders and Search Tools Link to Influence Flower Influence Flower ( What are Influence Flowers? ) Core recommender toggle CORE Recommender ( What is CORE? ) IArxiv recommender toggle IArxiv Recommender ( What is IArxiv? ) Author Venue Institution Topic About arXivLabs arXivLabs: experimental projects with community collaborators arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website. Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them. Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs . Which authors of this paper are endorsers? | Disable MathJax ( What is MathJax? ) About Help contact arXiv Click here to contact arXiv Contact subscribe to arXiv mailings Click here to subscribe Subscribe Copyright Privacy Policy Web Accessibility Assistance arXiv Operational Status

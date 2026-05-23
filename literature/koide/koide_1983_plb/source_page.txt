@@ -1,0 +1,19 @@
+# Source page for koide_1983_plb
+Fetched: 2026-05-23 12:55  (urllib)
+URL: https://api.crossref.org/works/10.1016/0370-2693(83)90644-5
+Status: 200
+Title: A fermion-boson composite model of quarks and leptons
+
+## Meta tags
+- `citation_title`: A fermion-boson composite model of quarks and leptons
+- `citation_doi`: 10.1016/0370-2693(83)90644-5
+- `citation_author`: Koide, Yoshio
+- `citation_journal_title`: Physics Letters B
+- `citation_volume`: 120
+- `citation_firstpage`: 161
+- `citation_lastpage`: 165
+- `citation_publication_date`: 1983
+
+## Visible text
+
+A fermion-boson composite model of quarks and leptons
