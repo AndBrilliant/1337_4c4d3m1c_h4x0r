@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """papers_mcp — MCP server bundling:
-  * Literature library CRUD/search over ~/Desktop/Academic/library
+  * Literature library CRUD/search over ~/claude/paper-tools/literature
   * check-citations launcher
   * graduated dissent launcher
   * background job management for the long-running tools
@@ -31,7 +31,7 @@ from mcp.server.fastmcp import FastMCP
 # ---------------------------------------------------------------------------
 # Config
 
-LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT", "/Users/Drew/Desktop/Academic/library")).expanduser()
+LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT", "/Users/Drew/claude/paper-tools/literature")).expanduser()
 CHECK_CITATIONS_DIR = Path("/Users/Drew/claude/paper-tools/check-citations")
 CHECK_CITATIONS_PY = CHECK_CITATIONS_DIR / "check_citations.py"
 CHECK_CITATIONS_PYTHON = Path("/Users/Drew/Desktop/Academic/AI_Research/graduated_dissent_bench/.venv/bin/python3")
@@ -843,6 +843,178 @@ def library_verify_citation(slot: str, save: bool = True, save_source: bool = Tr
         summary.append("rationale:")
         summary += [f"  - {r}" for r in report.rationale]
     return "\n".join(summary)
+
+
+_JOURNAL_CANONICAL = {
+    "physical review letters": "Phys. Rev. Lett.",
+    "phys rev lett": "Phys. Rev. Lett.",
+    "physics letters b": "Phys. Lett. B",
+    "phys lett b": "Phys. Lett. B",
+    "physical review d": "Phys. Rev. D",
+    "phys rev d": "Phys. Rev. D",
+    "physical review b": "Phys. Rev. B",
+    "phys rev b": "Phys. Rev. B",
+    "modern physics letters a": "Mod. Phys. Lett. A",
+    "mod phys lett a": "Mod. Phys. Lett. A",
+    "international journal of modern physics a": "Int. J. Mod. Phys. A",
+    "int j mod phys a": "Int. J. Mod. Phys. A",
+    "european physical journal c": "Eur. Phys. J. C",
+    "eur phys j c": "Eur. Phys. J. C",
+    "european physical journal special topics": "Eur. Phys. J. ST",
+    "eur phys j special topics": "Eur. Phys. J. ST",
+    "progress of theoretical physics": "Prog. Theor. Phys.",
+    "prog theor phys": "Prog. Theor. Phys.",
+    "journal of high energy physics": "JHEP",
+    "jhep": "JHEP",
+    "nuclear physics b": "Nucl. Phys. B",
+    "nucl phys b": "Nucl. Phys. B",
+    "lettere al nuovo cimento": "Lett. Nuovo Cim.",
+    "lett nuovo cim": "Lett. Nuovo Cim.",
+    "letters in mathematical physics": "Lett. Math. Phys.",
+    "z phys c": "Z. Phys. C",
+    "zeitschrift fur physik c": "Z. Phys. C",
+    "reviews of modern physics": "Rev. Mod. Phys.",
+    "rev mod phys": "Rev. Mod. Phys.",
+    "nature physics": "Nat. Phys.",
+    "nature": "Nature",
+    "science": "Science",
+    "advances in neural information processing systems": "NeurIPS",
+    "neurips": "NeurIPS",
+    "iclr": "ICLR",
+    "icml": "ICML",
+    "naacl": "NAACL",
+    "emnlp": "EMNLP",
+    "acl": "ACL",
+}
+
+
+def _canon_journal(j: Optional[str]) -> Optional[str]:
+    if not j:
+        return None
+    norm = re.sub(r"[^\w\s]+", "", j.lower()).strip()
+    norm = re.sub(r"\s+", " ", norm)
+    return _JOURNAL_CANONICAL.get(norm, j.strip())
+
+
+def _slot_journal(slot: Path) -> tuple[Optional[str], str]:
+    """Return (journal, source) for a slot. source ∈ {meta, ref, none}."""
+    op = (slot / "one_pager.md").read_text(errors="replace")
+    src = slot / "source_page.txt"
+    if src.is_file():
+        st = src.read_text(errors="replace")
+        m = re.search(r"^- `citation_journal_title`:\s*(.+)$", st, re.MULTILINE)
+        if m:
+            return m.group(1).strip(), "meta"
+    m = re.search(r"`citation_journal_title`:\s*([^\n]+)", op)
+    if m:
+        return m.group(1).strip(), "meta"
+    ref_m = re.search(r"^## Reference\s*\n(.+?)(?=^## |\Z)", op, re.MULTILINE | re.DOTALL)
+    if ref_m:
+        ref = ref_m.group(1)
+        for pat in [
+            r"→\s*\*\*?\*([^*]+)\*",
+            r"→\s*\*([^*]+)\*",
+            r"\*\*\*([^*]+?)\*\s+\*\*",
+        ]:
+            m = re.search(pat, ref)
+            if m:
+                v = m.group(1).strip()
+                if "arxiv" not in v.lower():
+                    return v, "ref"
+        for m in re.finditer(r"\*\*([^*]+)\*\*", ref):
+            v = m.group(1).strip()
+            if "arxiv" in v.lower() or re.match(r"^\d", v):
+                continue
+            v = re.split(r"\s+\d{1,3}\s", v, maxsplit=1)[0]
+            v = re.split(r"\s+\(\d{4}\)", v, maxsplit=1)[0]
+            return v.strip(), "ref"
+    return None, "none"
+
+
+def _slot_year(slot: Path) -> Optional[int]:
+    """Pull year from slot name (e.g. koide_1983 -> 1983) or from one_pager."""
+    m = re.search(r"(?:^|[_-])(19\d{2}|20\d{2})(?:$|[_-])", slot.name)
+    if m:
+        return int(m.group(1))
+    op = (slot / "one_pager.md").read_text(errors="replace")
+    m = re.search(r"\((19\d{2}|20\d{2})\)", op)
+    return int(m.group(1)) if m else None
+
+
+def _verdict_of(slot: Path) -> Optional[str]:
+    op = (slot / "one_pager.md").read_text(errors="replace")
+    m = re.search(r"^- \*\*Verdict:\*\* `([A-Z_]+)`", op, re.MULTILINE)
+    return m.group(1) if m else None
+
+
+@server.tool(
+    description=(
+        "Summary statistics for a topic (or the whole library if topic is empty). "
+        "group_by in {journal, year, decade, verdict, has_pdf}. Returns a sorted count table. "
+        "Journals are canonicalized (Phys. Rev. Lett. = Physical Review Letters = phys rev lett, etc.)."
+    )
+)
+def library_stats(topic: str = "", group_by: str = "journal") -> str:
+    gb = group_by.lower()
+    if gb not in {"journal", "year", "decade", "verdict", "has_pdf"}:
+        return _err(f"group_by must be one of journal/year/decade/verdict/has_pdf; got {group_by!r}")
+    slots = _slot_paths(topic or None)
+    if not slots:
+        return f"(no slots{' in topic ' + topic if topic else ''})"
+    from collections import Counter
+    counts: Counter = Counter()
+    arxiv_only = 0
+    untagged = 0
+    no_year = 0
+    for s in slots:
+        if gb == "journal":
+            j, _src = _slot_journal(s)
+            if not j:
+                op = (s / "one_pager.md").read_text(errors="replace")
+                if re.search(r"arXiv:", op):
+                    arxiv_only += 1
+                else:
+                    untagged += 1
+                continue
+            if "arxiv" in j.lower():
+                arxiv_only += 1
+                continue
+            counts[_canon_journal(j)] += 1
+        elif gb == "year":
+            y = _slot_year(s)
+            if y:
+                counts[str(y)] += 1
+            else:
+                no_year += 1
+        elif gb == "decade":
+            y = _slot_year(s)
+            if y:
+                counts[f"{(y // 10) * 10}s"] += 1
+            else:
+                no_year += 1
+        elif gb == "verdict":
+            counts[_verdict_of(s) or "(none)"] += 1
+        elif gb == "has_pdf":
+            counts["with PDF" if _slot_pdf(s) else "without PDF"] += 1
+    label = f"{topic or 'library (all topics)'}"
+    n = len(slots)
+    lines = [f"=== {label}: {n} slots, group_by={gb} ===", ""]
+    if gb == "year" or gb == "decade":
+        items = sorted(counts.items())
+    else:
+        items = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    width = max((len(k) for k in counts), default=10)
+    for k, v in items:
+        bar = "#" * v
+        lines.append(f"  {v:4d}  {k:<{width}}  {bar}")
+    if gb == "journal":
+        if arxiv_only:
+            lines.append(f"  ----  arXiv-only (no journal venue identified): {arxiv_only}")
+        if untagged:
+            lines.append(f"  ----  no venue tag extractable:                {untagged}")
+    if gb in {"year", "decade"} and no_year:
+        lines.append(f"  ----  no year extractable: {no_year}")
+    return "\n".join(lines)
 
 
 @server.tool(

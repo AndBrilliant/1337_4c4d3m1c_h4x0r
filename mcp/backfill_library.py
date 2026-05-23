@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-LIBRARY_ROOT = Path("/Users/Drew/Desktop/Academic/library")
+LIBRARY_ROOT = Path("/Users/Drew/claude/paper-tools/literature")
 CHECK_CITATIONS_DIR = Path("/Users/Drew/claude/paper-tools/check-citations")
 JOBS_DIR = Path("/tmp/papers-mcp-jobs")
 JOBS_DIR.mkdir(parents=True, exist_ok=True)

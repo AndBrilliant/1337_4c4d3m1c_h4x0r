@@ -18,7 +18,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-LIBRARY_ROOT = Path("/Users/Drew/Desktop/Academic/library")
+LIBRARY_ROOT = Path("/Users/Drew/claude/paper-tools/literature")
 JOBS_DIR = Path("/tmp/papers-mcp-jobs")
 
 _RATE_S = 3.0
