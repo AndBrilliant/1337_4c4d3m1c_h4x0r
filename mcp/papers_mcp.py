@@ -696,6 +696,126 @@ _LOW_INFO_TITLES = {"sciencedirect", "redirecting", "just a moment...", "loading
                     "checking your browser", "access denied", "page not found"}
 
 
+def _arxiv_search_title(title: str, max_results: int = 5) -> Optional[str]:
+    """Search arXiv by title; return an arXiv ID with a substring-matching title."""
+    if not title or len(title) < 8:
+        return None
+    try:
+        elapsed = time.time() - ARXIV_LAST_FETCH["t"]
+        if elapsed < ARXIV_RATE_S:
+            time.sleep(ARXIV_RATE_S - elapsed)
+        url = ("https://export.arxiv.org/api/query?search_query=ti:"
+               + urllib.parse.quote('"' + title[:200] + '"')
+               + f"&max_results={max_results}")
+        r = requests.get(url, timeout=20, headers={"User-Agent": "papers-mcp/1.0"})
+        ARXIV_LAST_FETCH["t"] = time.time()
+        if r.status_code != 200:
+            return None
+        root = ET.fromstring(r.text)
+    except Exception:
+        return None
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    norm_q = re.sub(r"[^a-z0-9 ]+", " ", title.lower())
+    norm_q = re.sub(r"\s+", " ", norm_q).strip()
+    for e in root.findall("a:entry", ns):
+        t = (e.findtext("a:title", default="", namespaces=ns) or "").strip().replace("\n", " ")
+        norm_t = re.sub(r"[^a-z0-9 ]+", " ", t.lower())
+        norm_t = re.sub(r"\s+", " ", norm_t).strip()
+        if norm_q and norm_t and (norm_q in norm_t or norm_t in norm_q):
+            aid = (e.findtext("a:id", default="", namespaces=ns) or "").rsplit("/", 1)[-1]
+            return re.sub(r"v\d+$", "", aid)
+    return None
+
+
+def _crossref_by_doi(doi: str) -> dict:
+    """Return a fetched-shaped dict synthesized from Crossref. No Cloudflare on api.crossref.org."""
+    out = {"status": 0, "final_url": "", "title": "", "meta": {},
+           "text_excerpt": "", "pdf": False, "error": "", "raw_meta_text": ""}
+    doi_clean = doi.lstrip("doi:").strip().rstrip(".,;)")
+    try:
+        url = f"https://api.crossref.org/works/{urllib.parse.quote(doi_clean, safe='/.()')}"
+        r = requests.get(url, timeout=20, headers={
+            "User-Agent": "papers-mcp/1.0 (mailto:andrew@amb-aero.com)",
+            "Accept": "application/json",
+        })
+        if r.status_code != 200:
+            out["error"] = f"HTTP {r.status_code}"
+            return out
+        msg = r.json().get("message", {})
+        out["status"] = 200
+        out["final_url"] = url
+        title = (msg.get("title") or [""])[0]
+        out["title"] = title
+        meta = out["meta"]
+        if title:
+            meta["citation_title"] = title
+        if msg.get("DOI"):
+            meta["citation_doi"] = msg["DOI"]
+        author_lines = []
+        for a in msg.get("author", []) or []:
+            family = a.get("family", "")
+            given = a.get("given", "")
+            if family:
+                name = f"{family}, {given}".strip(", ")
+                meta.setdefault("citation_author", name)
+                author_lines.append(f'<meta name="citation_author" content="{family}, {given}" />')
+        if (msg.get("container-title") or [""])[0]:
+            ct = msg["container-title"][0]
+            meta["citation_journal_title"] = ct
+            author_lines.append(f'<meta name="citation_journal_title" content="{ct}" />')
+        if msg.get("volume"):
+            meta["citation_volume"] = msg["volume"]
+        if msg.get("page"):
+            pg = msg["page"]
+            if "-" in pg:
+                fp, lp = pg.split("-", 1)
+                meta["citation_firstpage"] = fp
+                meta["citation_lastpage"] = lp
+            else:
+                meta["citation_firstpage"] = pg
+        try:
+            year = msg.get("issued", {}).get("date-parts", [[None]])[0][0]
+            if year:
+                meta["citation_publication_date"] = str(year)
+        except Exception:
+            pass
+        out["raw_meta_text"] = "\n".join(author_lines)
+        out["text_excerpt"] = title
+    except Exception as e:  # noqa: BLE001
+        out["error"] = f"{type(e).__name__}: {e}"
+    return out
+
+
+_DOI_FROM_URL_RE = re.compile(r"^https?://(?:dx\.)?doi\.org/(.+)$", re.IGNORECASE)
+
+
+def _verify_fetch_with_fallback(url: str, *, title_hint: Optional[str] = None) -> tuple[dict, str]:
+    """Return (fetched_dict, engine_label) — urllib → browser → crossref → arxiv-search."""
+    fetched = _fetch_url_plain(url)
+    engine = "urllib"
+    if _needs_browser_fallback(fetched) and _fetch_url_browser and _playwright_available():
+        fetched = _fetch_url_browser(url)
+        engine = "browser"
+    if _needs_browser_fallback(fetched):
+        doi: Optional[str] = None
+        m = _DOI_FROM_URL_RE.match(url)
+        if m:
+            doi = m.group(1)
+        else:
+            doi = (fetched.get("meta", {}) or {}).get("citation_doi")
+        if doi:
+            cr = _crossref_by_doi(doi)
+            if cr.get("title"):
+                return cr, "crossref"
+        if title_hint:
+            aid = _arxiv_search_title(title_hint)
+            if aid:
+                arx = _fetch_url_plain(f"https://arxiv.org/abs/{aid}")
+                if arx.get("meta"):
+                    return arx, "arxiv-search"
+    return fetched, engine
+
+
 def _needs_browser_fallback(fetched: dict) -> bool:
     if not fetched:
         return False
@@ -795,18 +915,33 @@ def library_verify_citation(slot: str, save: bool = True, save_source: bool = Tr
     url = _extract_url_from_reference(ref) or _extract_url_from_reference(title)
     used_browser = False
     fetched: dict = {}
+    engine = "none"
+    title_hint = None
+    m_title = re.search(r"\*([^*\n]{8,})\*", ref or "")
+    if m_title:
+        title_hint = re.sub(r"\s+", " ", m_title.group(1)).strip()
     if url:
         if browser:
             if not (_fetch_url_browser and _playwright_available()):
                 return _err("browser requested but Playwright not available")
             fetched = _fetch_url_browser(url)
             used_browser = True
+            engine = "browser"
         else:
-            fetched = _fetch_url_plain(url)
-            if _needs_browser_fallback(fetched) and _fetch_url_browser and _playwright_available():
-                fetched = _fetch_url_browser(url)
-                used_browser = True
-    report = _metadata_check(bibitem_raw, fetched or None)
+            fetched, engine = _verify_fetch_with_fallback(url, title_hint=title_hint)
+            used_browser = (engine == "browser")
+    elif title_hint:
+        aid = _arxiv_search_title(title_hint)
+        if aid:
+            fetched = _fetch_url_plain(f"https://arxiv.org/abs/{aid}")
+            engine = "arxiv-search"
+    # If a local PDF is present, prefer it: metadata_check treats it as
+    # ground-truth evidence and returns PASS without needing source-page meta.
+    pdf_basename = None
+    pdf_path = _slot_pdf(sp)
+    if pdf_path:
+        pdf_basename = pdf_path.name
+    report = _metadata_check(bibitem_raw, fetched or None, pdf_basename)
     if save_source and fetched and (fetched.get("text_excerpt") or fetched.get("raw_meta_text")):
         body = []
         body.append(f"# Source page for {sp.name}\n")
