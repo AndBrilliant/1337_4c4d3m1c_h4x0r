@@ -1336,6 +1336,58 @@ def check_citations_run(
 _GD_CONDITIONS = {"b1", "b2", "b3", "gd"}
 
 
+def _extract_text_from_source(source_path: Path) -> tuple[Optional[Path], str]:
+    """Extract plain text from a .pdf / .tex / .txt / .md source.
+
+    Returns (txt_path, message).  txt_path is written under
+    /tmp/papers-mcp-jobs/extracted/<stem>.txt; the caller cleans it up if needed.
+    """
+    ext = source_path.suffix.lower()
+    extract_dir = JOBS_DIR / "extracted"
+    extract_dir.mkdir(parents=True, exist_ok=True)
+    out_path = extract_dir / (source_path.stem + ".txt")
+
+    if ext in {".txt", ".md"}:
+        out_path.write_text(source_path.read_text(errors="replace"))
+        return out_path, f"copied as plain text ({out_path.stat().st_size} bytes)"
+
+    if ext == ".pdf":
+        pdftotext = shutil.which("pdftotext")
+        if not pdftotext:
+            return None, "pdftotext not installed (brew install poppler)"
+        r = subprocess.run([pdftotext, "-layout", str(source_path), str(out_path)],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            return None, f"pdftotext failed: {r.stderr.strip()}"
+        return out_path, f"pdftotext extracted ({out_path.stat().st_size} bytes)"
+
+    if ext == ".tex":
+        pandoc = shutil.which("pandoc")
+        if pandoc:
+            r = subprocess.run([pandoc, "-f", "latex", "-t", "plain",
+                                "-o", str(out_path), str(source_path)],
+                               capture_output=True, text=True)
+            if r.returncode == 0:
+                return out_path, f"pandoc latex→plain ({out_path.stat().st_size} bytes)"
+            # Fall through to manual strip on pandoc failure.
+        # Lightweight LaTeX strip — keeps body text, drops macros + envs.
+        tex = source_path.read_text(errors="replace")
+        tex = re.sub(r"(?m)(?<!\\)%.*$", "", tex)
+        tex = re.sub(r"\\(?:begin|end)\{(?:figure|table|equation|align|displaymath|tikzpicture|thebibliography)\*?\}.*?(?=\\(?:begin|end)|$)", "", tex, flags=re.DOTALL)
+        tex = re.sub(r"\\bibliography\{[^}]+\}", "", tex)
+        tex = re.sub(r"\\(?:bibitem|cite\w*)\s*(?:\[[^\]]*\])?\s*\{[^}]+\}", "", tex)
+        tex = re.sub(r"\\(?:label|ref|eqref|pageref|footnote|url|href)\{[^}]+\}(?:\{[^}]+\})?", "", tex)
+        tex = re.sub(r"\\(?:emph|textit|textbf|textsc|textsf|texttt|underline)\s*\{([^}]*)\}", r"\1", tex)
+        tex = re.sub(r"\\(?:section|subsection|subsubsection|paragraph|chapter)\*?\s*\{([^}]+)\}", r"\n\n\1\n\n", tex)
+        tex = re.sub(r"\\[a-zA-Z]+\*?\s*(?:\[[^\]]*\])?\s*\{?", " ", tex)
+        tex = re.sub(r"[{}]", "", tex)
+        tex = re.sub(r"\n{3,}", "\n\n", tex)
+        out_path.write_text(tex.strip() + "\n")
+        return out_path, f"latex stripped (regex fallback, {out_path.stat().st_size} bytes — install pandoc for better results)"
+
+    return None, f"unsupported source extension: {ext} (use .pdf, .tex, .txt, .md)"
+
+
 @server.tool(
     description=(
         "Launch a graduated-dissent pipeline run on a single paper.txt. "
@@ -1379,6 +1431,35 @@ def gd_run(
         f"  cmd: {' '.join(shlex.quote(a) for a in argv)}\n"
         f"Use job_status / job_tail to monitor."
     )
+
+
+@server.tool(
+    description=(
+        "Convenience wrapper around gd_run: accepts a .pdf / .tex / .txt / .md source path, "
+        "extracts plain text (pdftotext / pandoc / latex strip), and launches the "
+        "graduated-dissent pipeline on the result. paper_id defaults to the source's stem. "
+        "Returns the same job_id shape as gd_run."
+    )
+)
+def gd_run_from_source(
+    source_path: str,
+    paper_id: str = "",
+    condition: str = "gd",
+    out_dir: str = "",
+    cap_usd: float = 25.0,
+) -> str:
+    src = Path(source_path).expanduser()
+    if not src.is_file():
+        return _err(f"source file not found: {src}")
+    cond = condition.lower()
+    if cond not in _GD_CONDITIONS:
+        return _err(f"condition must be one of {sorted(_GD_CONDITIONS)}, got {condition}")
+    pid = paper_id.strip() or src.stem
+    txt_path, msg = _extract_text_from_source(src)
+    if not txt_path:
+        return _err(f"text extraction failed: {msg}")
+    launch = gd_run(str(txt_path), pid, cond, out_dir=out_dir, cap_usd=cap_usd)  # type: ignore[misc]
+    return f"Extracted text: {txt_path}\n  ({msg})\n\n{launch}"
 
 
 # ---------------------------------------------------------------------------
