@@ -1,0 +1,18 @@
+# Source page for rivero_2026
+Fetched: 2026-05-23 13:25  (urllib)
+URL: https://api.crossref.org/works/10.1016/j.physletb.2026.140510
+Status: 200
+Title: New sum rules of the Koide type
+
+## Meta tags
+- `citation_title`: New sum rules of the Koide type
+- `citation_doi`: 10.1016/j.physletb.2026.140510
+- `citation_author`: Rivero, Alejandro
+- `citation_journal_title`: Physics Letters B
+- `citation_volume`: 877
+- `citation_firstpage`: 140510
+- `citation_publication_date`: 2026
+
+## Visible text
+
+New sum rules of the Koide type

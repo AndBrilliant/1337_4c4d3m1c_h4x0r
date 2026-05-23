@@ -24,7 +24,7 @@ arXiv:1106.0971, 2011, peer-reviewed venue. Important for the GUT-compatible var
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1106.0971
 - **Rationale:**
   - title substring-match: 'su 5 compatible yukawaon model' ⊆ 'su 5 compatible yukawaon model'

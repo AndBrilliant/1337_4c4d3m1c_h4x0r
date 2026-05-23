@@ -22,7 +22,7 @@ Yukawaon model with a combined **U(3) × S₃ family symmetry**. The S₃ subgro
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1202.5815
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

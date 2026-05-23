@@ -1,5 +1,5 @@
 # Source page for kartavtsev_2011
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/1111.0480
 Status: 200
 Title: [1111.0480] A remark on the Koide relation for quarks

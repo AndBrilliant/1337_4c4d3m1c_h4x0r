@@ -22,7 +22,7 @@ Develops Sumino's QED-cancellation mechanism in an **explicitly anomaly-free** m
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1608.04514
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

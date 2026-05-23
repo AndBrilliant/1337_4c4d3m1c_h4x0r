@@ -1,5 +1,5 @@
 # Source page for koide_2010_yukawaon_a
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/1001.2075
 Status: 200
 Title: [1001.2075] Yukawaon model and unified description of quark and lepton mass matrices

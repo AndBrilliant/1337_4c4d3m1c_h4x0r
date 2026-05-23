@@ -21,7 +21,7 @@ arXiv:1004.4234, 2010, peer-reviewed venue. Counted in the discrete-flavor deriv
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/1004.4234
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

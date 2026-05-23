@@ -22,7 +22,7 @@ arXiv:hep-ph/0605074, peer-reviewed venue (proceedings / journal). Counted as th
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0605074
 - **Rationale:**
   - title substring-match: 'tribimaximal neutrino mixing and a relation between neutrino and charged lepton ' ⊆ 'tribimaximal neutrino mixing and a relation between neutrino and charged lepton '

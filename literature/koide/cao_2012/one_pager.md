@@ -23,7 +23,7 @@ The **first journal-published** statement of the heavy-quark Koide relation Q_he
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/1205.4068
 - **Rationale:**
   - title substring-match: 'neutrino masses from lepton and quark mass relations and neutrino oscillations' ⊆ 'neutrino masses from lepton and quark mass relations and neutrino oscillations'

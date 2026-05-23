@@ -1,5 +1,5 @@
 # Source page for koide_yamashita_2012
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1203.2028
 Status: 200
 Title: [1203.2028] Family Gauge Bosons with an Inverted Mass Hierarchy

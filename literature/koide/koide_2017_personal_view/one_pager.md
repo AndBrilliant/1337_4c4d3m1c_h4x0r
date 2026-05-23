@@ -22,7 +22,7 @@ arXiv:1701.01921, 2017, peer-reviewed venue or proceedings. Important as a self-
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1701.01921
 - **Rationale:**
   - title substring-match: 'sumino model and my personal view' ⊆ 'sumino model and my personal view'

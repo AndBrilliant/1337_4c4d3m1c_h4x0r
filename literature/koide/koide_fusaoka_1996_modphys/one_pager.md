@@ -24,7 +24,7 @@ Companion to hep-ph/9505201 / Z. Phys. C 71 459. Develops the **democratic-seesa
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9508369
 - **Rationale:**
   - title substring-match: 'democracy of families and neutrino mass matrix' ⊆ 'democracy of families and neutrino mass matrix'

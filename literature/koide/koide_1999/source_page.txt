@@ -1,5 +1,5 @@
 # Source page for koide_1999
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9905416
 Status: 200
 Title: [hep-ph/9905416] Universal Seesaw Mass Matrix Model with an S_3 Symmetry

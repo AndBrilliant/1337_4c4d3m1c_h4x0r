@@ -21,7 +21,7 @@ arXiv:1009.4254, 2010, peer-reviewed venue. Cited as Koide's formal endorsement 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/1009.4254
 - **Rationale:**
   - title substring-match: 'new u 3 family gauge symmetry and muonium into antimuonium conversion' ⊆ 'new u 3 family gauge symmetry and muonium into antimuonium conversion'

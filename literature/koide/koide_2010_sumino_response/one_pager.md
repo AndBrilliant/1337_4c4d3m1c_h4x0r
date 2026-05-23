@@ -22,7 +22,7 @@ Koide's response to Sumino's family-gauge mechanism (Sumino 2008, arXiv:0812.209
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/1004.0580
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

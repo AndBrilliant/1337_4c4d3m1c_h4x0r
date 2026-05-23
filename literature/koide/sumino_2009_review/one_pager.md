@@ -22,7 +22,7 @@ arXiv:0903.3640, 2009, conference proceedings or review chapter. Useful as an in
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/0903.3640
 - **Rationale:**
   - title substring-match: 'family gauge symmetry as an origin' ⊆ 'family gauge symmetry as an origin of koide s mass formula and charged lepton sp'

@@ -1,5 +1,5 @@
 # Source page for koide_2006_tribimax
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0605074
 Status: 200
 Title: [hep-ph/0605074] Tribimaximal Neutrino Mixing and a Relation Between Neutrino- and Charged Lepton-Mass Spectra

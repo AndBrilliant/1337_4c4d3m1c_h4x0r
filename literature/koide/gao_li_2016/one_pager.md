@@ -22,7 +22,7 @@ Detailed RG-stability analysis of two empirical fermion-mass formulae including 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/1512.06349
 - **Rationale:**
   - title substring-match: 'explorations of two empirical formulae for fermion masses' ⊆ 'explorations of two empirical formulae for fermion masses'

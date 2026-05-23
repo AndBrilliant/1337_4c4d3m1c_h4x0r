@@ -21,7 +21,7 @@ arXiv:hep-ph/0005137, 2000, peer-reviewed venue. The Z₃-cyclic mass-matrix str
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0005137
 - **Rationale:**
   - title substring-match: 'quark and lepton mass matrices with a cyclic permutation invariant form' ⊆ 'quark and lepton mass matrices with a cyclic permutation invariant form'

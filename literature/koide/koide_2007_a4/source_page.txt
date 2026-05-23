@@ -1,5 +1,5 @@
 # Source page for koide_2007_a4
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0701018
 Status: 200
 Title: [hep-ph/0701018] A_4 Symmetry and Lepton Masses and Mixing

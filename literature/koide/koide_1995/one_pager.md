@@ -21,7 +21,7 @@ arXiv:hep-ph/9501408, 1995. Peer-reviewed venue (likely *Mod. Phys. Lett. A* or 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9501408
 - **Rationale:**
   - title substring-match: 'new physics from u 3 family nonet higgs' ⊆ 'new physics from u 3 family nonet higgs boson scenario'

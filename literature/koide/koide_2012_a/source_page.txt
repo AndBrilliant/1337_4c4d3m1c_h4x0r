@@ -1,5 +1,5 @@
 # Source page for koide_2012_a
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1207.2308
 Status: 200
 Title: [1207.2308] Family Gauge Bosons with an Inverted Mass Hierarchy

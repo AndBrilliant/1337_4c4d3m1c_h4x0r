@@ -22,7 +22,7 @@ arXiv:1601.00754, 2016, peer-reviewed. Counted in the Koide-extension-to-neutrin
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/1601.00754
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

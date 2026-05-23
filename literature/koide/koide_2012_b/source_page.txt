@@ -1,5 +1,5 @@
 # Source page for koide_2012_b
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1209.1694
 Status: 200
 Title: [1209.1694] Can Mass of the Lightest Family Gauge Boson be of the Order of TeV?

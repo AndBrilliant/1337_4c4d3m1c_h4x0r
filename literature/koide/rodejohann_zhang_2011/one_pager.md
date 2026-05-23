@@ -25,7 +25,7 @@ Major Koide-extension paper. Extends the charged-lepton Koide relation to neutri
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/1101.5525
 - **Rationale:**
   - title substring-match: 'extended empirical fermion mass relation' ⊆ 'extended empirical fermion mass relation'

@@ -20,7 +20,7 @@ arXiv:hep-ph/9705239, 1997. Review/proceedings. Counted in the Koide-comprehensi
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9705239
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

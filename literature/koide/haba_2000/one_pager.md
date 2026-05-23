@@ -21,7 +21,7 @@ arXiv:hep-ph/0005064, 2000, peer-reviewed. Counted as the predecessor radiative-
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0005064
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable

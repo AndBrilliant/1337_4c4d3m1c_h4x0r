@@ -26,7 +26,7 @@ Notable extension of the Koide relation framework to all four sectors. Argues th
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0510289
 - **Rationale:**
   - title substring-match: 'a new look at an old mass relation' ⊆ 'a new look at an old mass relation'

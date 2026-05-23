@@ -21,7 +21,7 @@ arXiv:hep-ph/9602303, 1996, peer-reviewed in *Mod. Phys. Lett. A* / equivalent. 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9602303
 - **Rationale:**
   - title substring-match: 'a democratic seesaw quark mass matrix related to the charged lepton masses' ⊆ 'a democratic seesaw quark mass matrix related to the charged lepton masses'

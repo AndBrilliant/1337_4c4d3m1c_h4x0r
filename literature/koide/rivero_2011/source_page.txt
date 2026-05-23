@@ -1,5 +1,5 @@
 # Source page for rivero_2011
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1111.7232
 Status: 200
 Title: [1111.7232] A new Koide tuple: strange-charm-bottom

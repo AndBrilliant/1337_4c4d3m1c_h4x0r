@@ -1,5 +1,5 @@
 # Source page for koide_fusaoka_1996_modphys
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9508369
 Status: 200
 Title: [hep-ph/9508369] Democracy of Families and Neutrino Mass Matrix

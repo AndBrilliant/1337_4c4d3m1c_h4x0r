@@ -1,5 +1,5 @@
 # Source page for koide_2018_review
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1809.00425
 Status: 200
 Title: [1809.00425] What Physics Does The Charged Lepton Mass Relation Tell Us?

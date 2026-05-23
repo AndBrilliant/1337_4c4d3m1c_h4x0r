@@ -22,7 +22,7 @@ arXiv:hep-ph/0505220, never journal-published. Semantic Scholar corpus ID 165836
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0505220
 - **Rationale:**
   - title substring-match: 'the strange formula of dr koide' ⊆ 'the strange formula of dr koide'

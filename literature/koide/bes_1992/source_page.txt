@@ -1,5 +1,5 @@
 # Source page for bes_1992
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/1212.0761
 Status: 200
 Title: [1212.0761] Comment on Phys. Rev. Lett. 109, 152005 (2012)

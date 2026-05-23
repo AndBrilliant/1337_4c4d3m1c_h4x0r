@@ -1,5 +1,5 @@
 # Source page for gerard_goffinet_herquet_2006
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0510289
 Status: 200
 Title: [hep-ph/0510289] A New Look at an Old Mass Relation

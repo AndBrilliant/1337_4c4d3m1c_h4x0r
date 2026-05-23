@@ -1,5 +1,5 @@
 # Source page for koide_2013_anomaly_free
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1308.2129
 Status: 200
 Title: [1308.2129] Yukawaon Model with Anomaly Free Set of Quarks and Leptons in a U(3) Family Symmetry

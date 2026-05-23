@@ -1,5 +1,5 @@
 # Source page for haba_2000
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0005064
 Status: 200
 Title: [hep-ph/0005064] Are lepton flavor mixings in the democratic mass matrix stable against quantum corrections?

@@ -1,5 +1,5 @@
 # Source page for koide_2016
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1608.04514
 Status: 200
 Title: [1608.04514] Sumino&#39;s Cancellation Mechanism in an Anomaly-Free Model

@@ -1,5 +1,5 @@
 # Source page for koide_1983_plb
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://api.crossref.org/works/10.1016/0370-2693(83)90644-5
 Status: 200
 Title: A fermion-boson composite model of quarks and leptons

@@ -22,7 +22,7 @@ arXiv:1111.7232, never journal-published. Cited in both Koide literature review 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1111.7232
 - **Rationale:**
   - title substring-match: 'a new koide tuple strange charm bottom' ⊆ 'a new koide tuple strange charm bottom'

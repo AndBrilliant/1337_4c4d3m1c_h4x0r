@@ -1,5 +1,5 @@
 # Source page for koide_2000_cyclic
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0005137
 Status: 200
 Title: [hep-ph/0005137] Quark and Lepton Mass Matrices with a Cyclic Permutation Invariant Form

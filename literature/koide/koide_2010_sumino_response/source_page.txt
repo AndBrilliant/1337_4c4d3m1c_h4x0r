@@ -1,5 +1,5 @@
 # Source page for koide_2010_sumino_response
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/1004.0580
 Status: 200
 Title: [1004.0580] Charged Lepton Mass Spectrum and a Scalar Potential Model

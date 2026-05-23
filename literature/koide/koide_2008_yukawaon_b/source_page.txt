@@ -1,5 +1,5 @@
 # Source page for koide_2008_yukawaon_b
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/0811.3470
 Status: 200
 Title: [0811.3470] Charged Lepton Mass Relations in a Supersymmetric Yukawaon Model

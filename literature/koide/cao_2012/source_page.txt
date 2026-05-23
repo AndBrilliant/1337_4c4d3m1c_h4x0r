@@ -1,5 +1,5 @@
 # Source page for cao_2012
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/1205.4068
 Status: 200
 Title: [1205.4068] Neutrino masses from lepton and quark mass relations and neutrino oscillations

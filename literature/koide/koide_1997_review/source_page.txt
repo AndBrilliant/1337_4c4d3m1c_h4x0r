@@ -1,5 +1,5 @@
 # Source page for koide_1997_review
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9705239
 Status: 200
 Title: [hep-ph/9705239] Democratic Seesaw Mass Matrix Model and New Physics

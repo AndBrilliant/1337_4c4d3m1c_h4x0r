@@ -1,5 +1,5 @@
 # Source page for rodejohann_zhang_2011
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/1101.5525
 Status: 200
 Title: [1101.5525] Extended Empirical Fermion Mass Relation

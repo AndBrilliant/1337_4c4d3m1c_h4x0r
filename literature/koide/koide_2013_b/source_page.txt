@@ -1,5 +1,5 @@
 # Source page for koide_2013_b
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1309.4172
 Status: 200
 Title: [1309.4172] U(3)$\times$[U(1)]$^3$ Model and Visible Family Gauge Boson Effects

@@ -1,5 +1,5 @@
 # Source page for sumino_2009_review
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/0903.3640
 Status: 200
 Title: [0903.3640] Family Gauge Symmetry as an Origin of Koide&#39;s Mass Formula and Charged Lepton Spectrum

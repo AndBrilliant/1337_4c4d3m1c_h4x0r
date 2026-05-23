@@ -24,7 +24,7 @@ Combines the **universal seesaw** mass-matrix structure with an **S₃ family sy
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9905416
 - **Rationale:**
   - title substring-match: 'universal seesaw mass matrix model with an s 3 symmetry' ⊆ 'universal seesaw mass matrix model with an s 3 symmetry'

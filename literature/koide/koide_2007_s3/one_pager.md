@@ -21,7 +21,7 @@ Applies the **S₃ family symmetry** framework to the neutrino sector specifical
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID

@@ -25,7 +25,7 @@ arXiv:2305.19116, 2023, peer-reviewed (Phys. Rev. D / equivalent). The headline 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/2305.19116
 - **Rationale:**
   - title substring-match: 'measurement of the lepton mass with the belle ii experiment' ⊆ 'measurement of the lepton mass with the belle ii experiment'

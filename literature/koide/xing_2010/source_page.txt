@@ -1,5 +1,5 @@
 # Source page for xing_2010
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/1004.4234
 Status: 200
 Title: [1004.4234] Broken S_3 Flavor Symmetry of Leptons and Quarks: Mass Spectra and Flavor Mixing Patterns

@@ -21,7 +21,7 @@ Updated BES tau-mass measurement using **more decay channels** than the 1992 ana
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable; evidence has no extractable DOI/arXiv/title

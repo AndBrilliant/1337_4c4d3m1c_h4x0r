@@ -1,5 +1,5 @@
 # Source page for belle_ii_2023
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/2305.19116
 Status: 200
 Title: [2305.19116] Measurement of the $τ$-lepton mass with the Belle~II experiment

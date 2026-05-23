@@ -1,5 +1,5 @@
 # Source page for koide_1995
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9501408
 Status: 200
 Title: [hep-ph/9501408] New Physics from U(3)-Family Nonet Higgs Boson Scenario

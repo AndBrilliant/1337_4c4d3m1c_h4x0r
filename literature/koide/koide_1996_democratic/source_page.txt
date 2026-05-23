@@ -1,5 +1,5 @@
 # Source page for koide_1996_democratic
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9602303
 Status: 200
 Title: [hep-ph/9602303] A Democratic Seesaw Quark Mass Matrix Related to the Charged Lepton Masses

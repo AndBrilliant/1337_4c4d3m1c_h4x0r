@@ -1,5 +1,5 @@
 # Source page for huang_2016
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/1601.00754
 Status: 200
 Title: [1601.00754] Some New Symmetric Relations and the Prediction of Left and Right Handed Neutrino Masses using Koide&#39;s Relation

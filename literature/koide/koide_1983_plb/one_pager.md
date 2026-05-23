@@ -22,7 +22,7 @@ A cleaner restatement of the fermion–boson composite (preon) model first set o
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://api.crossref.org/works/10.1016/0370-2693(83)90644-5
 - **Rationale:**
   - title substring-match: 'a fermion boson composite model of quarks and leptons' ⊆ 'a fermion boson composite model of quarks and leptons'

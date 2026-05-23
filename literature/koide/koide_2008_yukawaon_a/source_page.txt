@@ -1,5 +1,5 @@
 # Source page for koide_2008_yukawaon_a
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/0809.2449
 Status: 200
 Title: [0809.2449] Phenomenological Meaning of a Neutrino Mass Matrix Related to Up-Quark Masses

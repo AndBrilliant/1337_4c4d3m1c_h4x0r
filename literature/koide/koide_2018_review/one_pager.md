@@ -23,7 +23,7 @@ arXiv:1809.00425, 2018, peer-reviewed venue. Recommended late-period Koide revie
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:24  (urllib)
 - **Source URL:** https://arxiv.org/abs/1809.00425
 - **Rationale:**
   - title substring-match: 'what physics does the charged lepton mass relation tell us' ⊆ 'what physics does the charged lepton mass relation tell us'

@@ -1,5 +1,5 @@
 # Source page for koide_fusaoka_1996_zphys
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9505201
 Status: 200
 Title: [hep-ph/9505201] Top Quark Mass Enhancement in a Seesaw-Type Quark Mass Matrix

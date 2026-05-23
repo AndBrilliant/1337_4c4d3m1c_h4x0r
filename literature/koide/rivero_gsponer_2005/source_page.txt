@@ -1,5 +1,5 @@
 # Source page for rivero_gsponer_2005
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0505220
 Status: 200
 Title: [hep-ph/0505220] The strange formula of Dr. Koide

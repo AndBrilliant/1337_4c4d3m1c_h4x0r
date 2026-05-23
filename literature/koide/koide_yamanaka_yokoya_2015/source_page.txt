@@ -1,5 +1,5 @@
 # Source page for koide_yamanaka_yokoya_2015
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1507.04987
 Status: 200
 Title: [1507.04987] Family Gauge Boson Production at the LHC

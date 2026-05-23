@@ -22,7 +22,7 @@ arXiv:1111.0480, never journal-published. Cited by Cao 2012 PRD, Gao-Li 2016 EPJ
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:22  (urllib)
 - **Source URL:** https://arxiv.org/abs/1111.0480
 - **Rationale:**
   - title substring-match: 'a remark on the koide relation for quarks' ⊆ 'a remark on the koide relation for quarks'

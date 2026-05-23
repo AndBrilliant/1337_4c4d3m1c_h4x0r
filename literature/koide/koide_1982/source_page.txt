@@ -1,6 +1,6 @@
 # Source page for koide_1982
-Fetched: 2026-05-23 12:55  (urllib)
-URL: https://link.springer.com/article/10.1007/BF02817096?error=cookies_not_supported&code=e86fbab4-60ed-47e5-b517-e7d939e73302
+Fetched: 2026-05-23 13:22  (urllib)
+URL: https://link.springer.com/article/10.1007/BF02817096?error=cookies_not_supported&code=52941b1c-5599-4597-a981-47e01c430f52
 Status: 200
 Title: Fermion-boson two-body model of quarks and leptons and cabibbo mixing | Lettere al Nuovo Cimento (1971-1985) | Springer Nature Link
 

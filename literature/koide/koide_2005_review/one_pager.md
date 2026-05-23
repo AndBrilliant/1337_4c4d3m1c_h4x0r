@@ -22,7 +22,7 @@ Koide's major review and program statement, written 23 years after the original 
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0506247
 - **Rationale:**
   - title substring-match: 'challenge to the mystery of the charged lepton mass formula' ⊆ 'challenge to the mystery of the charged lepton mass formula'

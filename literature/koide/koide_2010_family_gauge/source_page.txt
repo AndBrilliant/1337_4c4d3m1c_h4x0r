@@ -1,5 +1,5 @@
 # Source page for koide_2010_family_gauge
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/1009.4254
 Status: 200
 Title: [1009.4254] New U(3) Family Gauge Symmetry and Muonium into Antimuonium Conversion

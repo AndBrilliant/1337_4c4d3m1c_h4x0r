@@ -1,5 +1,5 @@
 # Source page for koide_2009_yukawaon
-Fetched: 2026-05-23 12:56  (urllib)
+Fetched: 2026-05-23 13:23  (urllib)
 URL: https://arxiv.org/abs/0904.1644
 Status: 200
 Title: [0904.1644] Yukawaon Model in the Quark Sector and Nearly Tribimaximal Neutrino Mixing

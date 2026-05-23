@@ -24,7 +24,7 @@ The full-length development of the Sumino mechanism set out in the PLB short ver
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/0812.2103
 - **Rationale:**
   - title substring-match: 'family gauge symmetry as an origin of koide s mass formula and charged lepton sp' ⊆ 'family gauge symmetry as an origin of koide s mass formula and charged lepton sp'

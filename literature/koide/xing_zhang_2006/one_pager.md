@@ -22,7 +22,7 @@ Both Koide literature review research reports, §5 / §G. Identified as the **ke
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0602134
 - **Rationale:**
   - title substring-match: 'on the koide like relations for the running masses of charged leptons neutrinos ' ⊆ 'on the koide like relations for the running masses of charged leptons neutrinos '

@@ -1,5 +1,5 @@
 # Source page for rivero_2024
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/2407.05397
 Status: 200
 Title: [2407.05397] An interpretation of scalars in SO(32)

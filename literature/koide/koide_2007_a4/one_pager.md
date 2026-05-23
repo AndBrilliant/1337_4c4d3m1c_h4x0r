@@ -24,7 +24,7 @@ arXiv:hep-ph/0701018, 2007, peer-reviewed venue. Important for showing Koide eng
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:56  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0701018
 - **Rationale:**
   - title substring-match: 'a 4 symmetry and lepton masses and mixing' ⊆ 'a 4 symmetry and lepton masses and mixing'

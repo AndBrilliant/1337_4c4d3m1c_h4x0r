@@ -22,7 +22,7 @@ Phenomenological reformulation of the Koide relation, with a correction term δ 
 ## Citation verification
 
 - **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:55  (urllib)
+- **Checked:** 2026-05-23 13:23  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
   - insufficient deterministic signal — bib lacks DOI and arXiv ID

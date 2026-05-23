@@ -1,5 +1,5 @@
 # Source page for koide_nishiura_2012
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/1202.5815
 Status: 200
 Title: [1202.5815] Yukawaon Model with U(3)$\times$S$_3$ Family Symmetries

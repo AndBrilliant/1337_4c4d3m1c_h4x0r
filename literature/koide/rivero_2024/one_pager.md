@@ -20,7 +20,7 @@ Rivero's recent peer-reviewed paper. Treats scalars in SO(32) — Koide-adjacent
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:57  (urllib)
+- **Checked:** 2026-05-23 13:25  (urllib)
 - **Source URL:** https://arxiv.org/abs/2407.05397
 - **Rationale:**
   - title substring-match: 'an interpretation of scalars in so 32' ⊆ 'an interpretation of scalars in so 32'

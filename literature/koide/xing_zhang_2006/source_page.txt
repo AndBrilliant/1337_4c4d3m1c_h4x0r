@@ -1,5 +1,5 @@
 # Source page for xing_zhang_2006
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:25  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0602134
 Status: 200
 Title: [hep-ph/0602134] On the Koide-like Relations for the Running Masses of Charged Leptons, Neutrinos and Quarks

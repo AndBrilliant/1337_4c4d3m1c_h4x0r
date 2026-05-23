@@ -1,5 +1,5 @@
 # Source page for li_ma_2005
-Fetched: 2026-05-23 12:57  (urllib)
+Fetched: 2026-05-23 13:24  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0505028
 Status: 200
 Title: [hep-ph/0505028] Estimate of neutrino masses from Koide&#39;s relation

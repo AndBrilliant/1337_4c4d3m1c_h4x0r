@@ -22,8 +22,8 @@ The **original paper** introducing what became known as the Koide relation Q = (
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:55  (urllib)
-- **Source URL:** https://link.springer.com/article/10.1007/BF02817096?error=cookies_not_supported&code=e86fbab4-60ed-47e5-b517-e7d939e73302
+- **Checked:** 2026-05-23 13:22  (urllib)
+- **Source URL:** https://link.springer.com/article/10.1007/BF02817096?error=cookies_not_supported&code=52941b1c-5599-4597-a981-47e01c430f52
 - **Rationale:**
   - title substring-match: 'fermion boson two body model of quarks and leptons and cabibbo mixing' ⊆ 'fermion boson two body model of quarks and leptons and cabibbo mixing'
   - authors OK: bib first 'koide' ∈ source ['koide']

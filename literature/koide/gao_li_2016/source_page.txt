@@ -1,5 +1,5 @@
 # Source page for gao_li_2016
-Fetched: 2026-05-23 12:55  (urllib)
+Fetched: 2026-05-23 13:22  (urllib)
 URL: https://arxiv.org/abs/1512.06349
 Status: 200
 Title: [1512.06349] Explorations of two empirical formulae for fermion masses
