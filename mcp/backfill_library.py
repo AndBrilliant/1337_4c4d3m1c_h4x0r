@@ -26,9 +26,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-LIBRARY_ROOT = Path("/Users/Drew/claude/paper-tools/literature")
-CHECK_CITATIONS_DIR = Path("/Users/Drew/claude/paper-tools/check-citations")
-JOBS_DIR = Path("/tmp/papers-mcp-jobs")
+import os
+REPO_ROOT = Path(os.environ.get("PAPERS_REPO_ROOT") or Path(__file__).resolve().parent.parent)
+LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT") or REPO_ROOT / "literature").expanduser()
+CHECK_CITATIONS_DIR = Path(os.environ.get("CHECK_CITATIONS_DIR") or REPO_ROOT / "check-citations")
+JOBS_DIR = Path(os.environ.get("PAPERS_JOBS_DIR") or "/tmp/papers-mcp-jobs")
 JOBS_DIR.mkdir(parents=True, exist_ok=True)
 
 sys.path.insert(0, str(CHECK_CITATIONS_DIR))

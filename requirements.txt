@@ -1,0 +1,18 @@
+# Core dependencies for the citation checker + papers MCP server.
+# Install with: pip install -r requirements.txt
+#
+# After installation, run:  python3 -m playwright install chromium
+# (Playwright needs a separate one-time browser download for the Cloudflare
+#  fallback in citation verification.)
+
+# Model Context Protocol (for the MCP server consumed by Claude Desktop).
+mcp>=1.0.0
+
+# HTTP + arXiv/Crossref API + arXiv search.
+requests>=2.31.0
+
+# Headless Chromium for Cloudflare-protected publisher pages.
+playwright>=1.40.0
+
+# Schema validation used by the MCP server.
+pydantic>=2.0.0

@@ -18,8 +18,10 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-LIBRARY_ROOT = Path("/Users/Drew/claude/paper-tools/literature")
-JOBS_DIR = Path("/tmp/papers-mcp-jobs")
+import os
+REPO_ROOT = Path(os.environ.get("PAPERS_REPO_ROOT") or Path(__file__).resolve().parent.parent)
+LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT") or REPO_ROOT / "literature").expanduser()
+JOBS_DIR = Path(os.environ.get("PAPERS_JOBS_DIR") or "/tmp/papers-mcp-jobs")
 
 _RATE_S = 3.0
 _last = 0.0

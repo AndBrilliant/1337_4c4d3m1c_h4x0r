@@ -29,15 +29,23 @@ import requests
 from mcp.server.fastmcp import FastMCP
 
 # ---------------------------------------------------------------------------
-# Config
+# Config — every path is overridable via env var so the same code runs from a
+# fresh clone on a friend's laptop (REPO_ROOT auto-detected from __file__).
 
-LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT", "/Users/Drew/claude/paper-tools/literature")).expanduser()
-CHECK_CITATIONS_DIR = Path("/Users/Drew/claude/paper-tools/check-citations")
+REPO_ROOT = Path(os.environ.get("PAPERS_REPO_ROOT") or Path(__file__).resolve().parent.parent)
+LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT") or REPO_ROOT / "literature").expanduser()
+CHECK_CITATIONS_DIR = Path(os.environ.get("CHECK_CITATIONS_DIR") or REPO_ROOT / "check-citations")
 CHECK_CITATIONS_PY = CHECK_CITATIONS_DIR / "check_citations.py"
-CHECK_CITATIONS_PYTHON = Path("/Users/Drew/Desktop/Academic/AI_Research/graduated_dissent_bench/.venv/bin/python3")
-GD_REPO = Path("/Users/Drew/Desktop/Academic/AI_Research/graduated_dissent_bench")
+# Default to whichever python is running this MCP — the venv next to the
+# script.  Users override via $CHECK_CITATIONS_PYTHON if they need a different one.
+CHECK_CITATIONS_PYTHON = Path(os.environ.get("CHECK_CITATIONS_PYTHON") or sys.executable)
+# Graduated-dissent harness lives outside this repo by default.  If $GD_REPO
+# is unset and no fallback exists, gd_run reports a clear error rather than
+# silently crashing on a hardcoded /Users/Drew path.
+_GD_DEFAULT = Path.home() / "Desktop/Academic/AI_Research/graduated_dissent_bench"
+GD_REPO = Path(os.environ.get("GD_REPO") or _GD_DEFAULT)
 GD_PIPELINE_PY = GD_REPO / "harness" / "run_pipeline.py"
-GD_PYTHON = GD_REPO / ".venv" / "bin" / "python3"
+GD_PYTHON = Path(os.environ.get("GD_PYTHON") or GD_REPO / ".venv" / "bin" / "python3")
 
 # Make metadata_check + browser_fetch importable from this server.
 sys.path.insert(0, str(CHECK_CITATIONS_DIR))

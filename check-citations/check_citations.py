@@ -33,8 +33,8 @@ Usage:
       [--workers 3]         # parallel model calls per citation
       [--only KEY1,KEY2]    # subset for testing
 
-The harness reuses api_client.py from
-graduated_dissent_bench/harness — key loading, cost cap, dispatch.
+api_client.py is vendored alongside this script — it handles API-key loading
+from ~/.keys/<service>, cost capping, and model dispatch.
 """
 from __future__ import annotations
 
@@ -53,19 +53,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-# ── Locate api_client.py (graduated_dissent_bench harness) ────────────
-HARNESS = Path.home() / "Desktop/Academic/AI_Research/graduated_dissent_bench/harness"
-if not (HARNESS / "api_client.py").is_file():
-    sys.exit(
-        f"[check-citations] api_client.py not found at {HARNESS}.\n"
-        f"Edit HARNESS at the top of this file, or symlink the harness."
-    )
-sys.path.insert(0, str(HARNESS))
-import api_client  # type: ignore
-
-# v3: deterministic DOI / arXiv ID / title comparison (replaces the LLM
-# "metadata_match" dimension, which the models hallucinated either way on).
+# api_client.py + metadata_check.py are vendored next to this file.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import api_client  # type: ignore
 from metadata_check import metadata_check, MetadataReport  # type: ignore
 
 MODELS_TO_USE = ["opus", "gpt-5.4", "deepseek"]

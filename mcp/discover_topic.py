@@ -28,8 +28,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 
-LIBRARY_ROOT = Path("/Users/Drew/claude/paper-tools/literature")
-JOBS_DIR = Path("/tmp/papers-mcp-jobs")
+import os
+REPO_ROOT = Path(os.environ.get("PAPERS_REPO_ROOT") or Path(__file__).resolve().parent.parent)
+LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT") or REPO_ROOT / "literature").expanduser()
+JOBS_DIR = Path(os.environ.get("PAPERS_JOBS_DIR") or "/tmp/papers-mcp-jobs")
 JOBS_DIR.mkdir(parents=True, exist_ok=True)
 
 _ARXIV_ID_RE = re.compile(r"(?:arXiv\s*:?\s*)([a-z\-]+/\d{7}|\d{4}\.\d{4,5})(?:v\d+)?", re.IGNORECASE)

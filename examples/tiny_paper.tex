@@ -1,0 +1,45 @@
+% tiny_paper.tex — minimal demo for the citation checker.
+%
+% Three bibitems on purpose, exercising different verdict paths:
+%
+%   [koide1982]     should PASS  — real Lett. Nuovo Cim. paper, DOI resolves.
+%   [orphan_pass]   real arXiv paper but NOT cited in the body — should
+%                   appear in the "orphan bibitems" section of the report.
+%   [wrong_doi]     bibitem text claims one paper but the DOI points to a
+%                   completely different one — should be FAIL via the
+%                   deterministic metadata check.
+%
+% A fourth issue is wired in deliberately: the body cites `nonexistent_key`
+% which has no matching \bibitem entry — should appear in the "orphan
+% citations" section.
+
+\documentclass{article}
+\begin{document}
+
+\section*{Demo paragraph}
+
+Koide's empirical mass relation~\cite{koide1982} pins the charged-lepton
+masses to a fixed quadratic invariant.  An entirely unrelated paper exists
+that we accidentally cite here for the test~\cite{nonexistent_key}, and
+the bibliography below also contains a bibitem we never cite (the orphan
+case), plus a bibitem whose DOI points to a different paper than its title
+claims~\cite{wrong_doi}.
+
+\begin{thebibliography}{9}
+
+\bibitem{koide1982}
+Y.~Koide, \emph{Fermion-Boson Two-Body Model of Quarks and Leptons and
+Cabibbo Mixing}, Lett.\ Nuovo Cim.\ \textbf{34} (1982) 201--205,
+\textsc{doi}:10.1007/BF02817096.
+
+\bibitem{orphan_pass}
+J.~M.~Maldacena, \emph{The Large-N limit of superconformal field theories
+and supergravity}, Adv.\ Theor.\ Math.\ Phys.\ \textbf{2} (1998) 231,
+arXiv:hep-th/9711200.
+
+\bibitem{wrong_doi}
+S.~Hawking, \emph{Particle Creation by Black Holes}, Commun.\ Math.\ Phys.\
+\textbf{43} (1975) 199--220, \textsc{doi}:10.1038/nature12373.
+
+\end{thebibliography}
+\end{document}
