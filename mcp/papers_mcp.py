@@ -423,6 +423,96 @@ def library_git_commit(message: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# API key management — files under ~/.keys/<service>, mode 0600.
+# Matches the convention already used by graduated_dissent_bench/gui/server.py.
+
+KEYS_DIR = Path(os.environ.get("PAPERS_KEYS_DIR", "~/.keys")).expanduser()
+_KEY_SERVICES = {
+    "anthropic", "openai", "deepseek", "google", "groq", "mistral",
+    "xai", "crossref", "semantic_scholar", "openalex",
+}
+
+
+def _key_path(service: str) -> Path:
+    return KEYS_DIR / service
+
+
+@server.tool(
+    description=(
+        "Store an API key for a service. Writes ~/.keys/<service> with mode 0600. "
+        "Common services: anthropic, openai, deepseek, google, groq, mistral, xai, "
+        "crossref, semantic_scholar, openalex."
+    )
+)
+def keys_set(service: str, key: str) -> str:
+    s = service.strip().lower()
+    if not re.fullmatch(r"[a-z0-9_]+", s):
+        return _err(f"service must be snake_case lowercase: {service!r}")
+    if not key.strip():
+        return _err("empty key")
+    KEYS_DIR.mkdir(parents=True, exist_ok=True)
+    p = _key_path(s)
+    p.write_text(key.strip() + "\n")
+    p.chmod(0o600)
+    return f"Stored {s} key at {p} (mode {oct(p.stat().st_mode & 0o777)})"
+
+
+@server.tool(
+    description=(
+        "List which services have an API key configured under ~/.keys/. Does NOT print the key values."
+    )
+)
+def keys_list() -> str:
+    if not KEYS_DIR.is_dir():
+        return f"(no keys directory at {KEYS_DIR})"
+    lines = [f"Keys directory: {KEYS_DIR}", ""]
+    files = sorted(p for p in KEYS_DIR.iterdir() if p.is_file() and not p.name.startswith("."))
+    if not files:
+        lines.append("(no keys stored)")
+    for p in files:
+        try:
+            n = len(p.read_text().strip())
+            mode = oct(p.stat().st_mode & 0o777)
+        except Exception:
+            n, mode = 0, "?"
+        flag = "" if mode == "0o600" else f"  WARNING: mode {mode} (should be 0o600)"
+        lines.append(f"  {p.name}  ({n} chars){flag}")
+    return "\n".join(lines)
+
+
+@server.tool(description="Delete the stored API key for a service.")
+def keys_delete(service: str) -> str:
+    s = service.strip().lower()
+    p = _key_path(s)
+    if not p.is_file():
+        return f"(no key stored for {s})"
+    p.unlink()
+    return f"Deleted key for {s}"
+
+
+@server.tool(
+    description=(
+        "Verify a service's stored key is present and non-empty. Returns OK/MISSING and the character length. "
+        "Does NOT print the key value."
+    )
+)
+def keys_check(service: str) -> str:
+    s = service.strip().lower()
+    p = _key_path(s)
+    if not p.is_file():
+        return f"MISSING: no key for {s} at {p}"
+    n = len(p.read_text().strip())
+    return f"OK: {s} key present ({n} chars at {p})"
+
+
+def _load_key(service: str) -> Optional[str]:
+    p = _key_path(service)
+    if not p.is_file():
+        return os.environ.get(f"{service.upper()}_API_KEY")
+    return p.read_text().strip() or None
+
+
+# ---------------------------------------------------------------------------
 # Web fetch + search + verification
 
 
