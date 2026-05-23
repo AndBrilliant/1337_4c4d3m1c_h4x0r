@@ -21,7 +21,7 @@ Argues that Koide's relation is **approximately RG-stable** under running betwee
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 13:24  (urllib)
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/0601031
 - **Rationale:**
   - title substring-match: 'energy scale independence of koide s relation for quark and lepton masses' ⊆ 'energy scale independence of koide s relation for quark and lepton masses'

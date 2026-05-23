@@ -322,7 +322,17 @@ class Evidence:
 
     @property
     def is_hard_fail(self) -> bool:
-        return self.classification in {"blocked", "http_error", "network_error"}
+        # Strict policy: no evidence → HARD FAIL.  This includes:
+        #   - blocked / http_error / network_error: tried to fetch, server
+        #     refused or returned garbage.
+        #   - no_url: bibitem has no DOI / arXiv / URL at all (ISBN-only book,
+        #     or a malformed bibitem).  Previously this went to LLMs which
+        #     would PASS from prior knowledge — exactly the failure mode
+        #     v3.0+ was designed to prevent.  If a citation can't be
+        #     auto-resolved, the user must drop a local PDF at
+        #     <refs_dir>/<key>.pdf so the local-PDF flow takes over.
+        return self.classification in {"blocked", "http_error",
+                                        "network_error", "no_url"}
 
     @property
     def text_for_prompt(self) -> str:
@@ -389,7 +399,7 @@ def gather_evidence(item: BibItem, refs_dir: Path | None) -> Evidence:
         return ev
     fetched = fetch_url(url)
     classification, reason = classify_fetch(fetched, url)
-    # 3) Bot-block fallback: Playwright-driven headless Chromium recovers
+    # 3a) Bot-block fallback: Playwright-driven headless Chromium recovers
     # the landing page metadata for Cloudflare-protected publishers (OUP,
     # APS, Elsevier, etc.) where urllib gets 403'd. Skipped if Playwright
     # is not installed.
@@ -406,10 +416,165 @@ def gather_evidence(item: BibItem, refs_dir: Path | None) -> Evidence:
                 if b_class == "ok":
                     fetched = b_fetched
                     classification = "ok"
-                    reason = f"(browser fallback) recovered from {classification}"
+                    reason = "(browser fallback) recovered from bot-block"
+    # 3b) Crossref-by-DOI fallback.  The publisher's landing page may still
+    # be Cloudflare-blocked even via the browser (Sciencedirect / Elsevier
+    # in particular return a "Redirecting" stub).  api.crossref.org has the
+    # same authoritative metadata (title, authors, venue, vol/page/year)
+    # and never bot-blocks.  We treat the Crossref record as equivalent
+    # evidence for the deterministic checks.
+    if classification != "ok" and item.doi:
+        cr = _fetch_crossref_by_doi(item.doi)
+        if cr.get("title"):
+            fetched = cr
+            classification = "ok"
+            reason = "(crossref fallback) DOI metadata recovered from api.crossref.org"
+    # 3c) arXiv title-search fallback.  When the bib has a journal DOI but
+    # the publisher won't serve metadata to us (and Crossref didn't help —
+    # e.g. an older paper not in Crossref's index), search arXiv for a
+    # preprint version of the same paper by title.  Drew's rule (2026-05-23):
+    # "if there's an arXiv version, it's equivalent text to the journal —
+    # use it to validate correct usage.  The bib's DOI stays journal-side
+    # because that's what reviewers want, but verification can rely on the
+    # arXiv preprint."
+    if classification != "ok":
+        bib_title = _bib_title_for_arxiv_search(item)
+        if bib_title:
+            aid = _arxiv_search_by_title(bib_title)
+            if aid:
+                arx_fetched = fetch_url(f"https://arxiv.org/abs/{aid}")
+                arx_class, _ = classify_fetch(arx_fetched, f"https://arxiv.org/abs/{aid}")
+                if arx_class == "ok":
+                    fetched = arx_fetched
+                    classification = "ok"
+                    reason = (f"(arxiv-search fallback) journal DOI blocked; "
+                              f"using arXiv preprint {aid} as equivalent evidence")
+    # Final gate: STRICT mode requires substantive readable text to verify
+    # supports_claim against.  Crossref metadata alone (~100 chars: just the
+    # title) and bot-block stubs ("Redirecting", "Just a moment...", ~50 chars)
+    # don't let the LLM check whether the paper supports the manuscript's
+    # claim — only the deterministic identity check.  Drew's rule
+    # (2026-05-23): "if there's no PDF to check, HARD FAIL".  arXiv abstract
+    # pages count (the abstract IS substantive content); Crossref-only
+    # records and Cloudflare stubs don't.
+    if classification == "ok":
+        text_len = len((fetched.get("text_excerpt") or "").strip())
+        if text_len < 400:
+            classification = "http_error"
+            reason = (f"no substantive text to verify supports_claim "
+                      f"(only {text_len} chars of body — metadata stub or "
+                      f"Cloudflare interstitial).  Drop a PDF at "
+                      f"<refs_dir>/{item.key}.pdf to recover.")
     ev = Evidence(source="url", fetched=fetched,
                   classification=classification, reason=reason)
     return ev
+
+
+# ── Fallback helpers (DOI 403 / Crossref / arXiv title-search) ──────────
+
+_DOI_HOST_RE = re.compile(r"^https?://(?:dx\.)?doi\.org/(.+)$", re.IGNORECASE)
+
+
+def _fetch_crossref_by_doi(doi: str) -> dict:
+    """Synthesize a fetched-shape dict from api.crossref.org.  No Cloudflare,
+    no API key required (just a polite UA with a contact mailto).
+    """
+    out: dict[str, Any] = {"status": 0, "final_url": "", "title": "",
+                           "meta": {}, "text_excerpt": "", "pdf": False,
+                           "error": "", "raw_meta_text": ""}
+    clean = doi.lstrip("doi:").strip().rstrip(".,;)")
+    try:
+        url = f"https://api.crossref.org/works/{urllib.parse.quote(clean, safe='/.()')}"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "papers-mcp/1.0 (mailto:andrew@amb-aero.com)",
+            "Accept": "application/json",
+        })
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read(400_000))
+        msg = data.get("message", {})
+        out["status"] = 200
+        out["final_url"] = url
+        title = (msg.get("title") or [""])[0]
+        out["title"] = title
+        meta = out["meta"]
+        if title:
+            meta["citation_title"] = title
+        if msg.get("DOI"):
+            meta["citation_doi"] = msg["DOI"]
+        for a in msg.get("author", []) or []:
+            family = a.get("family", "")
+            given = a.get("given", "")
+            if family:
+                meta.setdefault("citation_author", f"{family}, {given}".strip(", "))
+        if (msg.get("container-title") or [""])[0]:
+            meta["citation_journal_title"] = msg["container-title"][0]
+        if msg.get("volume"):
+            meta["citation_volume"] = msg["volume"]
+        if msg.get("page"):
+            pg = msg["page"]
+            if "-" in pg:
+                fp, _ = pg.split("-", 1)
+                meta["citation_firstpage"] = fp
+            else:
+                meta["citation_firstpage"] = pg
+        try:
+            year = msg.get("issued", {}).get("date-parts", [[None]])[0][0]
+            if year:
+                meta["citation_publication_date"] = str(year)
+        except Exception:
+            pass
+        out["text_excerpt"] = title
+    except Exception as e:  # noqa: BLE001
+        out["error"] = f"{type(e).__name__}: {e}"
+    return out
+
+
+def _bib_title_for_arxiv_search(item: BibItem) -> str:
+    """Extract a title from the bibitem suitable for an arXiv search.  Tries
+    the metadata_check title extractor first (which handles MDPI + natbib
+    forms); falls back to the longest plain text run between quotes /
+    italics."""
+    try:
+        from metadata_check import extract_bibitem_title  # type: ignore
+        t = extract_bibitem_title(item.raw or "")
+        if t and len(t) >= 8:
+            return t.strip()
+    except Exception:
+        pass
+    return ""
+
+
+def _arxiv_search_by_title(title: str, max_results: int = 5) -> str | None:
+    """Return an arXiv ID whose title is a substring match (either direction)
+    of `title`.  Honors a 3-second-between-fetches rate limit on arxiv.org.
+    """
+    if not title or len(title) < 8:
+        return None
+    try:
+        url = ("https://export.arxiv.org/api/query?search_query=ti:"
+               + urllib.parse.quote('"' + title[:200] + '"')
+               + f"&max_results={max_results}")
+        time.sleep(3.0)  # arXiv requests 3s between fetches
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "check-citations/1.0 (academic citation verifier)",
+        })
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = resp.read(200_000).decode("utf-8", errors="replace")
+        import xml.etree.ElementTree as _ET
+        root = _ET.fromstring(data)
+    except Exception:
+        return None
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    norm_q = re.sub(r"[^a-z0-9 ]+", " ", title.lower())
+    norm_q = re.sub(r"\s+", " ", norm_q).strip()
+    for e in root.findall("a:entry", ns):
+        t = (e.findtext("a:title", default="", namespaces=ns) or "").strip().replace("\n", " ")
+        norm_t = re.sub(r"[^a-z0-9 ]+", " ", t.lower())
+        norm_t = re.sub(r"\s+", " ", norm_t).strip()
+        if norm_q and norm_t and (norm_q in norm_t or norm_t in norm_q):
+            aid = (e.findtext("a:id", default="", namespaces=ns) or "").rsplit("/", 1)[-1]
+            return re.sub(r"v\d+$", "", aid)
+    return None
 
 
 # ── Prompt + verdict ──────────────────────────────────────────────────
@@ -528,14 +693,57 @@ def parse_verdict(text: str) -> dict[str, Any]:
     return {"verdict": "PARSE_ERROR", "raw": text[:800]}
 
 
+# Per-process set of models that have proven unreachable (account-level
+# spend cap, missing key, quota exhaustion).  Once we see a definitive
+# unreachable error from a model, we stop dispatching to it for the rest
+# of the run — there's no point burning a slot in MODELS_TO_USE on a model
+# that will 400 every time and downgrade every verdict to non-unanimous.
+_UNAVAILABLE_MODELS: set[str] = set()
+
+# Patterns that identify an account-level / billing problem (vs. a real
+# model dissent or a transient network glitch).  Treat these as
+# "model unavailable for this run" rather than "model said FAIL".
+_SPEND_LIMIT_PATTERNS = re.compile(
+    r"reached your specified spending limit"
+    r"|insufficient[_ ]quota"
+    r"|insufficient[_ ]balance"
+    r"|credit balance is too low"
+    r"|exceeded.*quota"
+    r"|account is on hold"
+    r"|billing.+disabled"
+    r"|invalid[_ ]api[_ ]key"
+    r"|authentication[_ ]error",
+    re.IGNORECASE,
+)
+
+
+def _is_spend_limit_error(err_msg: str) -> bool:
+    return bool(_SPEND_LIMIT_PATTERNS.search(err_msg or ""))
+
+
 def call_one(model: str, prompt: str, key: str) -> tuple[str, dict[str, Any]]:
+    if model in _UNAVAILABLE_MODELS:
+        return model, {
+            "verdict": "MODEL_UNAVAILABLE",
+            "error": "model previously hit a spend-limit / quota / auth error; "
+                     "skipped for the rest of this run",
+        }
     try:
         text = api_client.call_model(model, prompt,
                                      label=f"cite/{key}/{model}",
                                      temperature=0)
         return model, parse_verdict(text)
     except Exception as e:  # noqa: BLE001
-        return model, {"verdict": "CALL_ERROR", "error": f"{type(e).__name__}: {e}"}
+        err = f"{type(e).__name__}: {e}"
+        if _is_spend_limit_error(err):
+            _UNAVAILABLE_MODELS.add(model)
+            print(f"[unavailable] {model}: spend-limit / quota / auth error — "
+                  f"dropped for the rest of this run", file=sys.stderr)
+            return model, {
+                "verdict": "MODEL_UNAVAILABLE",
+                "error": err,
+            }
+        return model, {"verdict": "CALL_ERROR", "error": err}
 
 
 def hard_fail_verdict(ev: Evidence) -> dict[str, Any]:
@@ -588,12 +796,18 @@ class CitationResult:
 
     @property
     def unanimous_pass(self) -> bool:
+        # Strict policy (citation verification is high-stakes — wrong PASSes
+        # land in published papers): a citation is unanimous PASS ONLY when
+        # every model in MODELS_TO_USE returned an explicit PASS.  Anything
+        # else — CALL_ERROR, MODEL_UNAVAILABLE (spend cap / auth), PARSE_ERROR,
+        # FLAG, FAIL — counts as non-PASS.  No feedback / not sure → FAIL.
         if (self.hard_fail or self.metadata_fail or
                 self.wrong_arxiv_same_paper or self.author_mismatch_same_paper or
                 self.journal_field_mismatch):
             return False
         verdicts = [v.get("verdict") for v in self.by_model.values()]
-        return len(verdicts) == len(MODELS_TO_USE) and all(v == "PASS" for v in verdicts)
+        return (len(verdicts) == len(MODELS_TO_USE)
+                and all(v == "PASS" for v in verdicts))
 
     @property
     def status_label(self) -> str:
@@ -617,7 +831,14 @@ def md_report(results: list[CitationResult], orphan_bib: list[str],
     lines: list[str] = []
     lines.append("# Citation verification report")
     lines.append("")
-    lines.append(f"- models: {', '.join(MODELS_TO_USE)}")
+    avail = [m for m in MODELS_TO_USE if m not in _UNAVAILABLE_MODELS]
+    unav = sorted(_UNAVAILABLE_MODELS)
+    if unav:
+        lines.append(f"- models reachable: {', '.join(avail)} (verdicts above are from these)")
+        lines.append(f"- models UNREACHABLE this run: {', '.join(unav)} "
+                     f"(spend limit / quota / auth; not counted against unanimity)")
+    else:
+        lines.append(f"- models: {', '.join(MODELS_TO_USE)}")
     lines.append(f"- bibitems checked: {len(results)}")
     n_pass = sum(1 for r in results if r.unanimous_pass)
     n_hard = sum(1 for r in results if r.hard_fail)
@@ -778,7 +999,8 @@ def md_report(results: list[CitationResult], orphan_bib: list[str],
 def run(tex_path: Path, *, report_path: Path | None,
         cap_usd: float, workers: int,
         only: set[str] | None,
-        refs_dir: Path | None) -> int:
+        refs_dir: Path | None,
+        no_llm: bool = False) -> int:
     raw = tex_path.read_text(encoding="utf-8")
     text = strip_tex_comments(raw)
     body, bib = split_body_and_bib(text)
@@ -804,8 +1026,46 @@ def run(tex_path: Path, *, report_path: Path | None,
         print(f"[filter] limited to {len(bibitems)} keys: "
               f"{sorted(only)}", file=sys.stderr)
 
-    api_client.configure_tracker(cap_usd=cap_usd)
-    api_client.load_keys()
+    # In --no-llm mode we never call the model layer, so skip the API-key
+    # bootstrap entirely.  This lets the script run from a venv that doesn't
+    # have the anthropic / openai / deepseek SDKs installed — the
+    # deterministic metadata check is what catches the citation bugs anyway.
+    if not no_llm:
+        api_client.configure_tracker(cap_usd=cap_usd)
+        api_client.load_keys()
+        # Preflight probe: catch account-level spend limits / missing keys
+        # BEFORE the per-citation loop wastes 30+ calls per blocked model.
+        # A 1-token completion costs <$0.001 per model.
+        print("[preflight] probing each model with a 1-token completion …",
+              file=sys.stderr)
+        for m in list(MODELS_TO_USE):
+            try:
+                api_client.call_model(m, "Reply with the single character: 1",
+                                       label=f"preflight/{m}",
+                                       temperature=0)
+                print(f"[preflight] {m:10s} OK", file=sys.stderr)
+            except Exception as e:  # noqa: BLE001
+                err = f"{type(e).__name__}: {e}"
+                if _is_spend_limit_error(err):
+                    _UNAVAILABLE_MODELS.add(m)
+                    print(f"[preflight] {m:10s} UNAVAILABLE — {err[:200]}",
+                          file=sys.stderr)
+                else:
+                    print(f"[preflight] {m:10s} transient error (will retry "
+                          f"per-citation): {err[:200]}", file=sys.stderr)
+        available = [m for m in MODELS_TO_USE if m not in _UNAVAILABLE_MODELS]
+        if not available:
+            print("[preflight] ABORT: no models are reachable.  Add credits / "
+                  "fix API keys for at least one of "
+                  f"{MODELS_TO_USE}.", file=sys.stderr)
+            return 2
+        if _UNAVAILABLE_MODELS:
+            print(f"[preflight] proceeding with {len(available)}/{len(MODELS_TO_USE)} "
+                  f"models: {available}.  Unanimity will not require the "
+                  f"unreachable model(s).", file=sys.stderr)
+    else:
+        print("[mode] --no-llm: deterministic metadata check only "
+              "(no LLM calls, no API cost)", file=sys.stderr)
 
     results: list[CitationResult] = []
     for idx, item in enumerate(bibitems, 1):
@@ -878,6 +1138,24 @@ def run(tex_path: Path, *, report_path: Path | None,
             results.append(r)
             continue
 
+        if no_llm:
+            # Deterministic-only mode: skip the LLM dispatch entirely.  The
+            # report still surfaces every deterministic verdict (PASS, FAIL,
+            # WRONG_ARXIV_SAME_PAPER, AUTHOR_MISMATCH_SAME_PAPER,
+            # JOURNAL_FIELD_MISMATCH), just no claim-support / archival
+            # judgments.
+            by_model = {m: {"verdict": "N/A",
+                            "overall_note": "skipped — --no-llm mode"}
+                        for m in MODELS_TO_USE}
+            r = CitationResult(
+                key=item.key, bibitem_raw=item.raw, canonical_url=url,
+                evidence=ev, orphan_in_body=(item.key in orphan_bib),
+                contexts=ctxs, by_model=by_model, hard_fail=False,
+                meta_report=meta_report,
+            )
+            results.append(r)
+            continue
+
         prompt = build_prompt(item, ev, ctxs, meta_report)
         by_model: dict[str, dict[str, Any]] = {}
         with cf.ThreadPoolExecutor(max_workers=min(workers, len(MODELS_TO_USE))) as ex:
@@ -905,7 +1183,10 @@ def run(tex_path: Path, *, report_path: Path | None,
             print(f"[budget] {e}", file=sys.stderr)
             break
 
-    cost = api_client.get_tracker().summary()
+    if no_llm:
+        cost = {"total_cost_usd": 0.0, "cap_usd": cap_usd}
+    else:
+        cost = api_client.get_tracker().summary()
     print(f"[cost] total ${cost['total_cost_usd']:.4f} of "
           f"${cost['cap_usd']:.2f}", file=sys.stderr)
 
@@ -938,6 +1219,13 @@ def main() -> int:
     ap.add_argument("--only", type=str, default="",
                     help="Comma-separated bibitem keys to check "
                          "(default: all).")
+    ap.add_argument("--no-llm", action="store_true",
+                    help="Skip LLM dispatch entirely — only run the "
+                         "deterministic metadata checks (PASS/FAIL/"
+                         "WRONG_ARXIV/AUTHOR_MISMATCH/JOURNAL_FIELD). "
+                         "Free, no API keys needed, no SDK imports.  Catches "
+                         "every bib bug the LLM layer wouldn't have caught "
+                         "anyway (the LLM only judges fuzzy supports_claim).")
     args = ap.parse_args()
     only = {k.strip() for k in args.only.split(",") if k.strip()} or None
     if not args.tex.is_file():
@@ -947,7 +1235,7 @@ def main() -> int:
                  f"{args.refs_dir}")
     return run(args.tex, report_path=args.report,
                cap_usd=args.cap_usd, workers=args.workers, only=only,
-               refs_dir=args.refs_dir)
+               refs_dir=args.refs_dir, no_llm=args.no_llm)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 # Source page for li_ma_2006
-Fetched: 2026-05-23 13:24  (urllib)
+Fetched: 2026-05-23 16:38  (urllib)
 URL: https://arxiv.org/abs/hep-ph/0601031
 Status: 200
 Title: [hep-ph/0601031] Energy scale independence of Koide&#39;s relation for quark and lepton masses

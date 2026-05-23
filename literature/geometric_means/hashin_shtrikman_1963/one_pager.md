@@ -28,8 +28,8 @@ J. Mech. Phys. Solids **11** (1963) 127, peer-reviewed. Foundational; one of the
 
 ## Citation verification
 
-- **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:59  (urllib)
+- **Verdict:** `PASS`
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
-  - insufficient deterministic signal — bib lacks DOI and arXiv ID
+  - evidence is a local PDF; deferring metadata to LLM contents-check

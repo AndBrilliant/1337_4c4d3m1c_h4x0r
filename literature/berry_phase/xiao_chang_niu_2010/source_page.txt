@@ -1,5 +1,5 @@
 # Source page for xiao_chang_niu_2010
-Fetched: 2026-05-23 12:58  (urllib)
+Fetched: 2026-05-23 16:37  (urllib)
 URL: https://arxiv.org/abs/0907.2021
 Status: 200
 Title: [0907.2021] Berry Phase Effects on Electronic Properties

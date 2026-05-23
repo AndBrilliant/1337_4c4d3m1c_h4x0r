@@ -33,11 +33,8 @@ Holt, Rinehart and Winston, 1976; the standard graduate CM textbook for ~50 year
 
 ## Citation verification
 
-- **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:58  (urllib)
-- **Source URL:** https://arxiv.org/abs/2101.01780
+- **Verdict:** `PASS`
+- **Checked:** 2026-05-23 17:30  (urllib)
+- **Source URL:** (none)
 - **Rationale:**
-  - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable
-- **Source meta (subset):**
-  - `citation_author`: Göhmann, Frank
-  - `citation_title`: Introduction to Solid State Physics
+  - evidence is a local PDF; deferring metadata to LLM contents-check

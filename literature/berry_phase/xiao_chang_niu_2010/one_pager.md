@@ -58,7 +58,7 @@ Rev. Mod. Phys. **82** (2010) 1959, peer-reviewed. The standard textbook-level r
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 12:58  (urllib)
+- **Checked:** 2026-05-23 16:37  (urllib)
 - **Source URL:** https://arxiv.org/abs/0907.2021
 - **Rationale:**
   - title substring-match: 'berry phase effects on electronic properties' ⊆ 'berry phase effects on electronic properties'

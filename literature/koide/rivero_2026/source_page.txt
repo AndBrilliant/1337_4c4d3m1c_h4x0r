@@ -1,5 +1,5 @@
 # Source page for rivero_2026
-Fetched: 2026-05-23 13:41  (urllib)
+Fetched: 2026-05-23 16:38  (urllib)
 URL: https://api.crossref.org/works/10.1016/j.physletb.2026.140510
 Status: 200
 Title: New sum rules of the Koide type

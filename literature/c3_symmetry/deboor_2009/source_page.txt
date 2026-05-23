@@ -1,0 +1,18 @@
+# Source page for deboor_2009
+Fetched: 2026-05-23 16:38  (urllib)
+URL: https://api.crossref.org/works/10.1364/OL.34.001783
+Status: 200
+Title: Three-beam interference lithography: upgrading a Lloyd's interferometer for single-exposure hexagonal patterning
+
+## Meta tags
+- `citation_title`: Three-beam interference lithography: upgrading a Lloyd's interferometer for single-exposure hexagonal patterning
+- `citation_doi`: 10.1364/ol.34.001783
+- `citation_author`: de Boor, Johannes
+- `citation_journal_title`: Optics Letters
+- `citation_volume`: 34
+- `citation_firstpage`: 1783
+- `citation_publication_date`: 2009
+
+## Visible text
+
+Three-beam interference lithography: upgrading a Lloyd's interferometer for single-exposure hexagonal patterning

@@ -1,5 +1,5 @@
 # Source page for leutwyler_1996
-Fetched: 2026-05-23 13:01  (urllib)
+Fetched: 2026-05-23 16:38  (urllib)
 URL: https://arxiv.org/abs/hep-ph/9602366
 Status: 200
 Title: [hep-ph/9602366] The ratios of the light quark masses

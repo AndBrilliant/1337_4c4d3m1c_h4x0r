@@ -54,8 +54,8 @@ Oxford University Press monograph, peer-reviewed at the editorial level. Re-issu
 
 ## Citation verification
 
-- **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:58  (urllib)
+- **Verdict:** `PASS`
+- **Checked:** 2026-05-23 17:31  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
-  - insufficient deterministic signal — bib lacks DOI and arXiv ID; bib title not extractable
+  - evidence is a local PDF; deferring metadata to LLM contents-check

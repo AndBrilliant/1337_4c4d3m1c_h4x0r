@@ -36,9 +36,28 @@ REPO_ROOT = Path(os.environ.get("PAPERS_REPO_ROOT") or Path(__file__).resolve().
 LIBRARY_ROOT = Path(os.environ.get("LITLIB_ROOT") or REPO_ROOT / "literature").expanduser()
 CHECK_CITATIONS_DIR = Path(os.environ.get("CHECK_CITATIONS_DIR") or REPO_ROOT / "check-citations")
 CHECK_CITATIONS_PY = CHECK_CITATIONS_DIR / "check_citations.py"
-# Default to whichever python is running this MCP — the venv next to the
-# script.  Users override via $CHECK_CITATIONS_PYTHON if they need a different one.
-CHECK_CITATIONS_PYTHON = Path(os.environ.get("CHECK_CITATIONS_PYTHON") or sys.executable)
+
+# check_citations.py needs the anthropic / openai / deepseek SDKs (vendored
+# api_client.py imports them at module load).  The MCP server's own venv
+# only has mcp + requests + playwright + pydantic, so running the checker
+# under sys.executable would crash at the api_client import.  Prefer the
+# graduated-dissent venv where the SDKs are already installed; fall back to
+# sys.executable if the user has set up an SDK-bearing venv elsewhere via
+# $CHECK_CITATIONS_PYTHON.
+def _resolve_check_citations_python() -> Path:
+    env = os.environ.get("CHECK_CITATIONS_PYTHON")
+    if env:
+        return Path(env)
+    # Try the graduated-dissent venv first (canonical location for the SDKs).
+    gd_py = Path.home() / "Desktop/Academic/AI_Research/graduated_dissent_bench/.venv/bin/python3"
+    if gd_py.is_file():
+        return gd_py
+    # Last resort: sys.executable.  Will crash at api_client import unless the
+    # user installed the SDKs into the MCP venv themselves.
+    return Path(sys.executable)
+
+
+CHECK_CITATIONS_PYTHON = _resolve_check_citations_python()
 # Graduated-dissent harness lives outside this repo by default.  If $GD_REPO
 # is unset and no fallback exists, gd_run reports a clear error rather than
 # silently crashing on a hardcoded /Users/Drew path.
@@ -920,35 +939,42 @@ def library_verify_citation(slot: str, save: bool = True, save_source: bool = Tr
         return _err(f"no '## Reference' section in {sp.relative_to(LIBRARY_ROOT)}")
     title = _parse_one_pager_title(text)
     bibitem_raw = _markdown_to_pseudo_latex(ref)
-    url = _extract_url_from_reference(ref) or _extract_url_from_reference(title)
     used_browser = False
     fetched: dict = {}
     engine = "none"
-    title_hint = None
-    m_title = re.search(r"\*([^*\n]{8,})\*", ref or "")
-    if m_title:
-        title_hint = re.sub(r"\s+", " ", m_title.group(1)).strip()
-    if url:
-        if browser:
-            if not (_fetch_url_browser and _playwright_available()):
-                return _err("browser requested but Playwright not available")
-            fetched = _fetch_url_browser(url)
-            used_browser = True
-            engine = "browser"
-        else:
-            fetched, engine = _verify_fetch_with_fallback(url, title_hint=title_hint)
-            used_browser = (engine == "browser")
-    elif title_hint:
-        aid = _arxiv_search_title(title_hint)
-        if aid:
-            fetched = _fetch_url_plain(f"https://arxiv.org/abs/{aid}")
-            engine = "arxiv-search"
-    # If a local PDF is present, prefer it: metadata_check treats it as
-    # ground-truth evidence and returns PASS without needing source-page meta.
+    url: Optional[str] = None
+
+    # Local PDF wins.  When the slot has <slot>.pdf, treat it as ground truth
+    # and skip URL fetching entirely — metadata_check's PDF path PASSes
+    # without needing source-page metadata.  This avoids the arxiv-search
+    # fallback matching a wrong-paper preprint by title alone.
     pdf_basename = None
     pdf_path = _slot_pdf(sp)
     if pdf_path:
         pdf_basename = pdf_path.name
+        engine = "local-pdf"
+    else:
+        url = _extract_url_from_reference(ref) or _extract_url_from_reference(title)
+        title_hint = None
+        m_title = re.search(r"\*([^*\n]{8,})\*", ref or "")
+        if m_title:
+            title_hint = re.sub(r"\s+", " ", m_title.group(1)).strip()
+        if url:
+            if browser:
+                if not (_fetch_url_browser and _playwright_available()):
+                    return _err("browser requested but Playwright not available")
+                fetched = _fetch_url_browser(url)
+                used_browser = True
+                engine = "browser"
+            else:
+                fetched, engine = _verify_fetch_with_fallback(url, title_hint=title_hint)
+                used_browser = (engine == "browser")
+        elif title_hint:
+            aid = _arxiv_search_title(title_hint)
+            if aid:
+                fetched = _fetch_url_plain(f"https://arxiv.org/abs/{aid}")
+                engine = "arxiv-search"
+
     report = _metadata_check(bibitem_raw, fetched or None, pdf_basename)
     if save_source and fetched and (fetched.get("text_excerpt") or fetched.get("raw_meta_text")):
         body = []
@@ -1292,7 +1318,10 @@ def job_kill(job_id: str) -> str:
     description=(
         "Launch the citation checker on a .tex file. Runs in the background; "
         "returns a job_id. Use job_status / job_tail to monitor. "
-        "Cost-capped at cap_usd. If only='KEY1,KEY2' is given, only those bibitems are checked."
+        "Cost-capped at cap_usd. If only='KEY1,KEY2' is given, only those bibitems are checked. "
+        "no_llm=True skips the LLM dispatch entirely — only deterministic checks "
+        "(PASS/FAIL/WRONG_ARXIV/AUTHOR_MISMATCH/JOURNAL_FIELD). Free, finishes in seconds "
+        "instead of minutes; catches every bib bug the LLM layer wouldn't have caught."
     )
 )
 def check_citations_run(
@@ -1301,6 +1330,7 @@ def check_citations_run(
     only: str = "",
     cap_usd: float = 5.0,
     report_path: str = "",
+    no_llm: bool = False,
 ) -> str:
     tex = Path(tex_path).expanduser()
     if not tex.is_file():
@@ -1319,9 +1349,11 @@ def check_citations_run(
         argv += ["--only", only]
     if report_path:
         argv += ["--report", str(Path(report_path).expanduser())]
+    if no_llm:
+        argv.append("--no-llm")
     meta = _start_job("check-citations", argv, cwd=tex.parent)
     return (
-        f"Launched check-citations.\n"
+        f"Launched check-citations{' (--no-llm)' if no_llm else ''}.\n"
         f"  job_id: {meta['job_id']}\n"
         f"  log: {meta['log']}\n"
         f"  cmd: {' '.join(shlex.quote(a) for a in argv)}\n"

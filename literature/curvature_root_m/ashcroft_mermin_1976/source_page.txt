@@ -1,5 +1,5 @@
 # Source page for ashcroft_mermin_1976
-Fetched: 2026-05-23 12:58  (urllib)
+Fetched: 2026-05-23 17:28  (urllib)
 URL: https://arxiv.org/abs/2101.01780
 Status: 200
 Title: [2101.01780] Introduction to Solid State Physics

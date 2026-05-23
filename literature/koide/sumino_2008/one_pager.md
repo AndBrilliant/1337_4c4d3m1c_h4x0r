@@ -22,7 +22,7 @@ Both Koide literature review research reports, §5 / §9. Identified as the most
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 13:25  (urllib)
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** https://arxiv.org/abs/0812.2090
 - **Rationale:**
   - title substring-match: 'family gauge symmetry and koide s mass formula' ⊆ 'family gauge symmetry and koide s mass formula'

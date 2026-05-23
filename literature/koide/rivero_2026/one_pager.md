@@ -15,7 +15,7 @@ pending
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 13:41  (urllib)
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** https://api.crossref.org/works/10.1016/j.physletb.2026.140510
 - **Rationale:**
   - title substring-match: 'new sum rules of the koide type' ⊆ 'new sum rules of the koide type'

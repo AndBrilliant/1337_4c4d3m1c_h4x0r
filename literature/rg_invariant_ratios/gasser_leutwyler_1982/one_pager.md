@@ -30,8 +30,8 @@ Phys. Rep. **87** (1982) 77, peer-reviewed. The foundational chiral-perturbation
 
 ## Citation verification
 
-- **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 13:01  (urllib)
+- **Verdict:** `PASS`
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
-  - insufficient deterministic signal — bib lacks DOI and arXiv ID
+  - evidence is a local PDF; deferring metadata to LLM contents-check

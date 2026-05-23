@@ -43,8 +43,8 @@ Sov. Phys. JETP **32** (1971) 63, peer-reviewed (translation of Zh. Eksp. Teor. 
 
 ## Citation verification
 
-- **Verdict:** `FLAG`
-- **Checked:** 2026-05-23 12:58  (urllib)
+- **Verdict:** `PASS`
+- **Checked:** 2026-05-23 16:37  (urllib)
 - **Source URL:** (none)
 - **Rationale:**
-  - insufficient deterministic signal — bib lacks DOI and arXiv ID
+  - evidence is a local PDF; deferring metadata to LLM contents-check

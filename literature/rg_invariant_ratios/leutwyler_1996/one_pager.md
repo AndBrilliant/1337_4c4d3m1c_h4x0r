@@ -65,7 +65,7 @@ Phys. Lett. B **378** (1996) 313, peer-reviewed. One of the most-cited papers on
 ## Citation verification
 
 - **Verdict:** `PASS`
-- **Checked:** 2026-05-23 13:01  (urllib)
+- **Checked:** 2026-05-23 16:38  (urllib)
 - **Source URL:** https://arxiv.org/abs/hep-ph/9602366
 - **Rationale:**
   - title substring-match: 'the ratios of the light quark masses' ⊆ 'the ratios of the light quark masses'

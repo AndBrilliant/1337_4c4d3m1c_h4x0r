@@ -1,5 +1,5 @@
 # Source page for sumino_2008
-Fetched: 2026-05-23 13:25  (urllib)
+Fetched: 2026-05-23 16:38  (urllib)
 URL: https://arxiv.org/abs/0812.2090
 Status: 200
 Title: [0812.2090] Family Gauge Symmetry and Koide&#39;s Mass Formula
