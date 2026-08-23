@@ -1,11 +1,45 @@
 ---
 name: check-citations
-description: Verify every citation in a LaTeX paper. v3.2 (2026-05-22) — DOI / arXiv ID / title matching is DETERMINISTIC in code (see metadata_check.py). Author surname check (v3.1) is hardened against title/journal false positives (v3.2). LLMs used only for fuzzy claim-support / archival judgments. Playwright browser fallback (browser_fetch.py) auto-recovers metadata for Cloudflare-protected publishers (Oxford, Elsevier) that bot-block urllib. Detects "wrong arXiv ID but same paper" with autofix; "metadata FAIL" (no LLM call) when bib actually points to a different paper. Drive in a loop. Use when the user asks to "check citations", "verify the bibliography", or "make sure every reference resolves" in a .tex paper.
+description: Verify every citation in a LaTeX paper. Deterministic DOI/arXiv/title/author matching in code; LLMs only for fuzzy claim-support. Requires a readable local <key>.pdf (>=3000 chars of text) in ~/refs/ or --refs-dir before any LLM call - no PDF = automatic fail. Drive as a convergence loop, not one-shot.
+whenToUse: When asked to check citations, verify a bibliography, confirm every reference resolves, or validate claim support in a .tex manuscript
 ---
 
-# check-citations (v3.2)
+# check-citations (v3.5)
 
 Verifies every citation in a LaTeX manuscript. The metadata-matching layer is **deterministic code** (`metadata_check.py`); LLMs are reserved for fuzzy judgments (claim support, archival quality).
+
+## v3.5 — the mechanical PDF lock (BINDING)
+
+**No readable local PDF → automatic HARD FAIL, before any LLM call.** This is a mechanical pre-LLM gate, not a judgment:
+
+- For each `\bibitem{key}`, the checker requires a file named exactly `<key>.pdf` in `--refs-dir` (or `~/refs/`, or the literature stash) that yields **≥ `FULL_TEXT_MIN_CHARS` (3000)** of `pdftotext`-extractable text.
+- **No file** → `no_pdf` HARD FAIL. **File present but scanned/empty** (e.g. a Project Euclid image scan, 368 chars) → `pdf_no_text` HARD FAIL — OCR it (`ocrmypdf`, or `pdftoppm` + `tesseract … pdf`) and rerun.
+- The model layer is **never reached** for these. Zero API spend on un-verifiable citations.
+- The deterministic **Crossref identity check still runs** (free, never bot-blocked) so a *fabricated* DOI is labeled `METADATA FAIL` even with no PDF — but identity alone can never upgrade a no-PDF citation to PASS. Claim-support is judged only against the actual paper text.
+- Rationale: a publisher landing page or a Crossref record proves a citation *points to a real paper*, not that the paper *supports the manuscript's claim*. Verifying support without the text is verification-in-name-only. That is the exact hole this lock closes.
+- Escape hatch: `--no-pdf-required` restores the older URL-fallback behavior (not recommended).
+
+### The acquisition ladder (automatic, in strict order)
+
+On a missing PDF, `acquire_pdf()` tries to fetch one itself, **in this order**, and stops at the first VERIFIED hit:
+
+1. **OPEN / PREPRINT** — Unpaywall (`api.unpaywall.org/v2/<doi>`), Semantic Scholar (`openAccessPdf`), OpenAlex (`oa_url` / `pdf_url` / per-location), arXiv (by eprint id, else title search), institutional repositories. Legal, free, **preferred**.
+2. **JOURNAL** — the publisher's own PDF via the Crossref `link` records / DOI. Usually paywalled or bot-blocked, but tried.
+3. **LAST RESORT** — Sci-Hub mirrors. **OFF by default**; enable with `--allow-scihub`. Explicitly last, explicitly opt-in.
+
+When the **whole ladder fails**, the citation HARD-FAILS with a `PAYWALL/BOT — you MUST download it by hand` message. The skill does **not** silently pass it, and does **not** keep retrying — it stops and tells the user to fetch the PDF manually (and gives the DOI).
+
+**Verify-before-save (mandatory).** A downloaded PDF is written to `~/refs/<key>.pdf` only if it (a) starts with `%PDF`, (b) yields ≥ `FULL_TEXT_MIN_CHARS` of text, (c) the **title** tokens overlap ≥ 60%, AND (d) the **first-author surname appears in the body**. Title alone collides — a 2009 Nature paper and a 2021 arXiv paper both titled *"Early warning signals for critical transitions…"* share every title word; only the author check (`Scheffer` ∉ the arXiv impostor) rejects it. Never hand over or save a source you have not resolved to the right paper.
+
+### The three no-PDF-no-audit guards (defense in depth)
+
+The "you can never audit a citation without a PDF" rule is enforced at **three** independent points — bypassing one still hits the others:
+
+- **Guard #1** — `gather_evidence` classifies a missing/scanned PDF as `no_pdf` / `pdf_no_text`, which `is_hard_fail` turns into a HARD FAIL before the model loop.
+- **Guard #2** — immediately before the LLM dispatch, `if not ev.has_full_text → HARD FAIL, skip`.
+- **Guard #3** — `build_prompt` itself `raise`s if asked to build an LLM prompt without full-text evidence.
+
+Plus the PASS gate: `unanimous_pass` requires `ev.has_full_text`, so even a green model vote can't pass a metadata-only citation.
 
 **Code lives at `~/claude/paper-tools/check-citations/`** — `check_citations.py` (driver) and `metadata_check.py` (deterministic matcher). The companion screener prompts live next door at `~/claude/paper-tools/screeners/`.
 
@@ -32,11 +66,25 @@ The previous version asked LLMs four questions per citation, including "does the
 - `supports_claim` — does the cited paper actually support the manuscript's specific claim? Quote evidence.
 - `standard` — archival source? (rule is fuzzy because GitHub-without-DOI is borderline depending on venue policy.)
 
+## Local PDF stash discovery (v3.3, BINDING)
+
+Before fetching anything from the web or declaring HARD FAIL, `gather_evidence` probes these locations in order:
+
+1. **`<refs_dir>/<key>.pdf`** — the active `--refs-dir` (existing behavior).
+2. **`~/refs/<key>.pdf`** — the user's personal PDF cache (exact-key match, case-preserving).
+3. **`~/claude/paper-tools/literature/<topic>/<slot>/<slot>.pdf`** — the curated literature library. The cite-key is converted to snake_case (`KaneMele2005` → `kane_mele_2005`) and the library is globbed for matching slots across all topic folders. Both `<slot>/<slot>.pdf` and fuzzy substring matches are tried.
+
+**When a fallback hit is found, the PDF is copied into `<refs_dir>` as `<key>.pdf`** so subsequent runs find it directly without re-traversing the stash.
+
+**Hard rule — library PDFs only.** The library is consulted only for the PDF *file itself*. Its metadata sidecars (`one_pager.md`, `TOC.md`, `RESEARCH_REPORT_*.md`) are **never** read by the verifier — they can be stale, partially reconstructed, or LLM-summarized and would defeat the audit. The PDF bytes are the evidence; everything else in the library is hearsay.
+
+This applies to the assistant driving the loop too: when a citation HARD-FAILs, **before** asking the user for a manual PDF, check `~/refs/` and the library yourself for any PDF that might match the cite-key under a non-obvious naming convention. The code auto-checks these locations, but if the slot name doesn't match the cite-key by the snake_case rule, a manual symlink / copy into `<refs_dir>` (or into `~/refs/` for global reuse) recovers it without a web fetch.
+
 ## What it does
 
 1. Parses `\bibitem{key}` entries and every `\cite{...}` call in the body.
 2. Reports **orphans**: bibitems never cited, and cites with no bibitem.
-3. For each bibitem, resolves evidence: local PDF at `<refs_dir>/<key>.pdf` if `--refs-dir` is given, otherwise the canonical URL (DOI > arXiv > raw URL).
+3. For each bibitem, resolves evidence: **(a) local PDF stashes** per the discovery rules above, otherwise **(b)** the canonical URL (DOI > arXiv > raw URL).
 4. **Classifies the fetch BEFORE calling LLMs**:
    - `ok` — substantive content, proceed.
    - `blocked` — Cloudflare / cookie wall / "Redirecting" stub → **HARD FAIL**, no LLM call.
@@ -77,7 +125,7 @@ The only stopping conditions are: (a) convergence, (b) the remaining issues all 
 API keys load automatically from `~/.keys/{anthropic,openai,deepseek}`.
 
 ```bash
-VENV=/Users/Drew/Desktop/Academic/AI_Research/graduated_dissent_bench/.venv/bin/python3
+VENV=~/claude/paper-tools/.venv/bin/python
 SCRIPT=~/claude/paper-tools/check-citations/check_citations.py
 
 # Default: full report to stdout, $5 cap, 3 models in parallel
@@ -152,6 +200,24 @@ Document publisher behaviors here so future runs save time. Add a row per new pu
 | **PhilSci-Archive** (`philsci-archive.pitt.edu`) | Bot-blocks direct PDF curls; landing page works in real browser. | User grabs in browser. |
 | **errorstatistics.com** (Mayo's blog) | Open, friendly to curl. Hosts free PDFs of most Mayo/Spanos papers. | `/wp-content/uploads/...` URL pattern; the `/mayo-publications/` page indexes them. |
 
+## Preflight - check the environment before the first run
+
+This skill depends on several local paths and binaries. If any are missing the
+verifier degrades silently (bot-blocked entries just HARD FAIL), so run this
+once per machine before trusting the output:
+
+```bash
+command -v pdftotext >/dev/null      || echo "MISSING: poppler (pdftotext)"
+test -x ~/claude/paper-tools/.venv/bin/python || echo "MISSING: check-citations venv"
+test -f ~/claude/paper-tools/check-citations/check_citations.py || echo "MISSING: check_citations.py"
+for k in anthropic openai deepseek; do test -s ~/.keys/$k || echo "MISSING: ~/.keys/$k"; done
+```
+
+If any line prints `MISSING`, fix it (or tell the user) before starting a
+convergence loop - a citation HARD FAIL is indistinguishable from a missing
+`pdftotext` or absent venv, and you do not want to spend the loop budget
+diagnosing the wrong thing.
+
 ## Underlying assumptions
 
 - `pdftotext` (Poppler) must be on PATH. macOS: `brew install poppler`.
@@ -165,7 +231,7 @@ Document publisher behaviors here so future runs save time. Add a row per new pu
 - `~/claude/paper-tools/check-citations/bib_to_bibitems.py` — converts a BibTeX `.bib` file to an inline `\thebibliography` block so the `\bibitem`-only parser can process BibTeX papers. Use with `<tex> <bib> -o <output.tex>` then run the checker on the output.
 - `~/claude/paper-tools/check-citations/browser_fetch.py` — Playwright fallback. Can also be invoked standalone for ad-hoc URL fetches: `python browser_fetch.py <url> [download_dir] [key]`.
 - `~/claude/paper-tools/screeners/` — preprint and preflight screener prompts, designed to be pasted into a fresh model session (different vendor preferred). Use after this skill converges and before submission.
-- `~/Desktop/Academic/library/` — the unified citation library (one_pager.md + PDF per slot). See its `ADDING_FILES.md`.
+- `~/claude/paper-tools/literature/<topic>/<slot>/<slot>.pdf` — the unified citation library (one `<slot>/` per source, `<slot>` = snake_case of the cite-key, e.g. `SeniorZhang2001` → `senior_zhang_2001`). This is what the checker auto-probes before any web fetch (`_local_stash_paths`); drop a paper here once and every future run finds it with no `--refs-dir`. Library *PDF bytes* are trusted evidence; library *metadata* sidecars (`one_pager.md`, `TOC.md`) are never read by the verifier. See `~/claude/paper-tools/literature/ADDING_FILES.md`. (The old `~/Desktop/Academic/library/` path was a photek-migration stale pointer and does not exist on indigo-3.)
 
 ## When to redirect the user
 
